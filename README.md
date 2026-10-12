@@ -97,6 +97,27 @@ auto-shape (`EMP42`/`42` → `EMP_042`); months accept `2026-03`, `03/2026`,
 same flow with a mapping editor and error table. (`POST /ingest/csv` still
 works for explicit CSV loads.)
 
+## Durable ingest at scale (Temporal)
+
+Small uploads run the same pipeline inline and return the full report. Big
+files go through a Temporal workflow with retries, heartbeats, cancel, and
+live progress — same code, same ledger, content-addressed jobs
+(`job_id = sha256(file)[:12]`, so re-uploads dedupe instead of reprocessing):
+
+```bash
+temporal server start-dev              # dev server on localhost:7233
+python worker/temporal_worker.py       # retries + heartbeats + progress queries
+```
+
+Production extras on every path: within-file duplicate quarantine (first
+wins), unmapped-column warnings, PII scan (`report` flags PAN/Aadhaar/account
+columns, `redact` masks them — mapped amounts/IDs are never touched), file
+caps (25MB / 100k rows), `DELETE /ingest/jobs/{job_id}` cancel. Knobs:
+`TEMPORAL_HOST/NAMESPACE/TASK_QUEUE`, `TEMPORAL_DISABLED=1` (force inline),
+`ACCUPAID_STAGING` (shared storage for multi-node), `ACCUPAID_INLINE_ROWS`,
+`ACCUPAID_MAX_FILE_MB/MAX_ROWS`. No server? The API degrades to inline
+automatically — durability via chunked commits + upserts + ledger either way.
+
 ## Evals (Sarvam gates — measured, reproducible)
 
 Dataset: `evals/dataset.jsonl` (120 cases: 60 clean, 48 tail Hinglish+typo, 12 adversarial). Each tail case runs **5×**, Wilson 95% CI reported; point pass rates rejected. Entity-WER = `(sub+del+ins)/slots` over `{emp_id, date, amount, invoice_id}`; amounts exact-match as integers. Case passes iff entities exact AND action exact AND (`must_cite` → cite present).

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from './api.js';
 
 const CSV_MAPS = {
@@ -12,18 +12,34 @@ function CsvPanel() {
   const [mapping, setMapping] = useState('');
   const [file, setFile] = useState(null);
   const [validateOnly, setValidateOnly] = useState(true);
+  const [pii, setPii] = useState('report');
   const [rep, setRep] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const pickKind = (k) => { setKind(k); setMapping(k ? CSV_MAPS[k] : ''); setRep(null); };
+  useEffect(() => {
+    if (!rep || rep.status !== 'RUNNING') return;
+    const id = setInterval(async () => {
+      try {
+        const j = await api.job(rep.job_id);
+        setRep(j);
+        if (j.status !== 'RUNNING') clearInterval(id);
+      } catch { clearInterval(id); }
+    }, 2000);
+    return () => clearInterval(id);
+  }, [rep && rep.job_id, rep && rep.status]);
   const upload = async (e) => {
     e.preventDefault(); setErr(''); setRep(null);
     if (!file) { setErr('Choose a file first (.csv .xlsx .json .pdf .txt).'); return; }
     setBusy(true);
     try {
-      setRep(await api.anyfile({ kind, mapping, file, validateOnly }));
+      setRep(await api.temporal({ kind, mapping, file, validateOnly, pii }));
     } catch (ex) { setErr(ex.detail || 'upload failed'); }
     finally { setBusy(false); }
+  };
+  const cancel = async () => {
+    try { setRep({ ...(await api.cancelJob(rep.job_id)), job_id: rep.job_id }); }
+    catch (ex) { setErr(ex.detail || 'cancel failed'); }
   };
   return (
     <form className="card" onSubmit={upload}>
@@ -46,12 +62,42 @@ function CsvPanel() {
       </label>
       <label className="check"><input type="checkbox" checked={validateOnly}
         onChange={(e) => setValidateOnly(e.target.checked)} /> Validate only (preview, write nothing)</label>
+      <label>PII handling
+        <select value={pii} onChange={(e) => setPii(e.target.value)}>
+          <option value="report">report (flag only)</option>
+          <option value="redact">redact (mask, amounts/IDs never touched)</option>
+          <option value="off">off</option>
+        </select>
+      </label>
       {err && <p className="err" role="alert">{err}</p>}
       <button className="btn go" type="submit" disabled={busy}>{busy ? 'Uploading…' : validateOnly ? 'Preview' : 'Load into database'}</button>
+      {rep && rep.status === 'RUNNING' && (
+        <div>
+          <p className="muted">running on Temporal… {rep.stage || 'queued'} {rep.progress || 0}%</p>
+          <div className="ttl" aria-hidden="true"><span style={{ width: `${rep.progress || 0}%` }} /></div>
+          <button className="btn ghost" type="button" onClick={cancel}>Cancel job</button>
+        </div>
+      )}
+      {rep && rep.status === 'CANCELLED' && <p className="warn-text">job cancelled — finished chunks survive, re-submit to finish.</p>}
       {rep && (
         <p className={rep.skipped === 0 ? 'ok-text' : 'warn-text'}>
           {rep.loaded} loaded · {rep.skipped} skipped of {rep.total} · via {rep.mapping_via} · job <code>{rep.job_id}</code>
         </p>
+      )}
+      {rep && rep.quarantined && rep.quarantined.length > 0 && (
+        <table className="diff">
+          <thead><tr><th colSpan="3">Quarantine (first wins)</th></tr></thead>
+          <tbody>{rep.quarantined.slice(0, 20).map((q, i) => (
+            <tr key={i} className="flag"><td>{q.row}</td><td><code>{q.key}</code></td><td>{q.reason}</td></tr>
+          ))}</tbody>
+        </table>
+      )}
+      {rep && rep.warnings && rep.warnings.length > 0 && (
+        <p className="muted">warnings: {rep.warnings.slice(0, 5).join(' · ')}</p>
+      )}
+      {rep && rep.pii && rep.pii.findings && rep.pii.findings.length > 0 && (
+        <p className="warn-text">PII ({rep.pii.mode}, redacted {rep.pii.redacted || 0}):{' '}
+          {rep.pii.findings.map((f) => `${f.column}:${f.type}×${f.count}`).join(', ')}</p>
       )}
       {rep && rep.errors && rep.errors.length > 0 && (
         <table className="diff">

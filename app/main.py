@@ -84,7 +84,8 @@ def root():
         "status": "ok",
         "endpoints": ["/chat", "/approve/{run_id}", "/runs/{run_id}",
                       "/runs/{run_id}/audit", "/ingest/slip", "/ingest/notice",
-                      "/ingest/csv", "/health", "/docs"],
+                      "/ingest/csv", "/ingest/file", "/ingest/jobs/{job_id}",
+                      "/health", "/docs"],
     }
 
 
@@ -277,23 +278,69 @@ async def ingest_any_file(kind: str = Form(""),
     return report
 
 
-@app.get("/ingest/jobs/{job_id}")
-def ingest_job(job_id: str):
+@app.post("/ingest/file-temporal")
+async def ingest_temporal(kind: str = Form(""),
+                          mapping: str = Form(""),
+                          file: UploadFile = File(...),
+                          month_default: str = Form(""),
+                          validate_only: bool = Form(False),
+                          pii: str = Form("report"),
+                          wait: bool = Form(True)):
+    """Temporal-backed upload (see /ingest/file for the inline twin).
+
+    Content-addressed jobs: same bytes -> same job_id -> existing report
+    without reprocessing. Big files stream as RUNNING (202); poll
+    GET /ingest/jobs/{job_id}; DELETE cancels. Server down -> runs inline.
+    Caps: 25MB / 100k rows. pii: report|redact|off."""
     import json as _json
 
-    from sqlalchemy import create_engine, select
-    from sqlalchemy.orm import Session
+    from workflows import service
 
-    from db.models import IngestJob
+    raw = await file.read()
+    maps = None
+    if mapping.strip():
+        try:
+            maps = _json.loads(mapping)
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"bad mapping json: {e}")
+    if pii not in ("report", "redact", "off"):
+        raise HTTPException(status_code=422, detail="pii must be report|redact|off")
+    # validate mapping/kind early via the shared core, then hand to service
+    from workflows import core as _core
 
-    with Session(create_engine(f"sqlite:///{app.state.db_path}")) as s:
-        job = s.execute(select(IngestJob).where(IngestJob.job_id == job_id)).scalar_one_or_none()
-    if job is None:
+    try:
+        _core.check_caps(file.filename or "upload", raw)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    status, body = await service.submit(file.filename or "upload.csv", raw, kind, maps,
+                                        app.state.db_path, month_default, validate_only,
+                                        pii_mode=pii, wait=wait)
+    if status == 422:
+        raise HTTPException(status_code=422, detail=body.get("detail", "bad input"))
+    return body
+
+
+@app.delete("/ingest/jobs/{job_id}")
+async def ingest_job_cancel(job_id: str):
+    from workflows import service
+
+    status, body = await service.cancel(app.state.db_path, job_id)
+    if status == 404:
+        raise HTTPException(status_code=404, detail=body["detail"])
+    if status == 409:
+        raise HTTPException(status_code=409, detail=body["detail"])
+    return body
+
+
+@app.get("/ingest/jobs/{job_id}")
+async def ingest_job(job_id: str):
+    """Job report — live Temporal progress while RUNNING, ledger otherwise."""
+    from workflows import service
+
+    rep = await service.progress(app.state.db_path, job_id)
+    if rep is None:
         raise HTTPException(status_code=404, detail="unknown job_id")
-    return {"job_id": job.job_id, "kind": job.kind, "filename": job.filename,
-            "status": job.status, "total": job.total, "loaded": job.loaded,
-            "skipped": job.skipped, "created_at": job.created_at,
-            "report": _json.loads(job.report or "{}")}
+    return rep
 
 
 @app.post("/ingest/csv")

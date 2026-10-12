@@ -30,6 +30,9 @@ frontend/dist/
 # Temp third-party datasets (see data/external/README.md)
 data/external/*.csv
 
+# Upload staging for Temporal/local ingest workers
+data/staging/
+
 # OS / editor
 .DS_Store
 Thumbs.db

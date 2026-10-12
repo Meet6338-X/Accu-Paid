@@ -35,7 +35,10 @@ def test_parse_xlsx_and_json(tmp_path):
         pass
 
 
-def test_heuristic_mapping_aliases():
+def test_heuristic_mapping_aliases(monkeypatch):
+    import llm.client as llm
+
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: None)  # force offline
     kind, mapping, via = infer_mapping(None, _rows())
     assert kind == "payroll" and via == "heuristic"
     assert mapping["Employee ID"] == "emp_id"
