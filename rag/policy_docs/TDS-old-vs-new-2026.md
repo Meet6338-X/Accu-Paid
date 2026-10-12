@@ -1,0 +1,12 @@
+# TDS-old-vs-new-2026 [tds]
+
+- Regime is per-employee choice: `regime = old | new`. Default regime is configurable; never auto-switch. [tds:01]
+- Old regime taxable: `taxable_old = gross - exemptions_old - deductions_old`. Lists are configurable. [tds:02]
+- New regime taxable: `taxable_new = gross - standard_deduction_new`. Deduction set is configurable. [tds:03]
+- Slab tax loop: iterate slabs `TDS_SLAB_[i]_LIMIT, TDS_SLAB_[i]_RATE`, all configurable, accumulate per slab. [tds:04]
+- Monthly TDS: `tds_monthly = (annual_tax - tds_paid_ytd) / months_remaining`. Both inputs from payroll_lookup. [tds:05]
+- What-if simulator (`tds_simulate`) is read-only: returns delta table old vs new, never commits payroll. [tds:06]
+- CTC hike handling: re-run both regimes, show `delta = tax_new_ctc - tax_old_ctc` with citations. [tds:07]
+- "TDS jyada kata / katauti" queries: fetch YTD paid + regime + taxable before explaining. Never guess. [tds:08]
+- Proof burden: every TDS answer cites `[tds:chunk]` plus payroll row month and emp_id. [tds:09]
+- Slab limits, rates, surcharge and cess flags are all configurable per financial year. [tds:10]

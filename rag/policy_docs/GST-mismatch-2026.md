@@ -1,0 +1,12 @@
+# GST-mismatch-2026 [gst]
+
+- Recon triple match: compare `po_amount vs invoiced_amount vs gst_filing_amount`. All from tools, never chat memory. [gst:01]
+- Amount tolerance: mismatch if `abs(invoiced - po) > GST_AMT_TOL`. GST_AMT_TOL is configurable. [gst:02]
+- Tax tolerance: mismatch if `abs(invoice_gst - filing_gst) > GST_TAX_TOL`. GST_TAX_TOL is configurable. [gst:03]
+- GSTIN check: `vendor_gstin` must match regex and PO master. Regex and master source are configurable. [gst:04]
+- Invoice ID format `INV-XXXX` validated by strict regex; `INV2041` without hyphen is a typo candidate, confirm first. [gst:05]
+- Verdict rule: `HOLD` if any tolerance breached or GSTIN mismatch, else `PAY` with risk score. Thresholds configurable. [gst:06]
+- Risk score: `risk = w1*amt_gap + w2*tax_gap + w3*gstin_flag`. Weights w1,w2,w3 are configurable. [gst:07]
+- Notice parse extracts `demand_amount, due_date, section_text, linked_invoices` via notice_parse dry-run only. [gst:08]
+- vendor_recon is dry-run; vendor_commit requires human_verdict=approve plus idempotency key. [gst:09]
+- Every recon answer cites `[gst:chunk]` and lists invoice_id + amounts compared. [gst:10]
