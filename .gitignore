@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+*.db
+*.sqlite3
+
+# Local agent skills cache (lockfile is committed)
+.agents/
+
+# Large local research binaries (kept locally, index is committed)
+idea/research/*.pdf
+rag/policy_docs/*.pdf
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build / docs site
+site/
+dist/
