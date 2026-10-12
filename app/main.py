@@ -75,6 +75,32 @@ def _maybe_langsmith() -> str | None:
 app = FastAPI(title="AccuPaid", version="0.1.0", lifespan=lifespan)
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "AccuPaid",
+        "version": "0.1.0",
+        "status": "ok",
+        "endpoints": ["/chat", "/approve/{run_id}", "/runs/{run_id}",
+                      "/runs/{run_id}/audit", "/ingest/slip", "/ingest/notice",
+                      "/health", "/docs"],
+    }
+
+
+@app.get("/health")
+def health():
+    from llm.client import backend_status
+
+    dbp = getattr(app.state, "db_path", os.getenv("ACCUPAID_DB", "accupaid.db"))
+    return {
+        "status": "ok",
+        "version": "0.1.0",
+        "db": os.path.exists(dbp),
+        "graph": hasattr(app.state, "graph"),
+        "llm": backend_status(),
+    }
+
+
 def _run_with_timeout(graph, run_id: str, query: str) -> dict:
     fut = _executor.submit(run_chat, graph, run_id, query)
     try:

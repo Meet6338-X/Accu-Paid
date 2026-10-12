@@ -27,6 +27,34 @@ main.app.state.db_path = DB
 client = TestClient(main.app)
 
 
+def test_root_and_health():
+    r = client.get("/")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["service"] == "AccuPaid" and body["status"] == "ok"
+    assert "/chat" in body["endpoints"] and "/health" in body["endpoints"]
+    h = client.get("/health")
+    assert h.status_code == 200
+    hb = h.json()
+    assert hb["status"] == "ok" and hb["db"] is True and hb["graph"] is True
+    assert hb["llm"]["fallback"] == "pollinations:available"
+
+
+def test_every_route_method_matrix():
+    # Cross-check: every documented endpoint responds (never 404), wrong verbs 405.
+    r = client.post("/chat", json={"query": "Show payroll for EMP_007 for 2026-01."})
+    assert r.status_code == 200
+    run_id = r.json()["run_id"]
+    assert client.get(f"/runs/{run_id}").status_code == 200
+    assert client.get(f"/runs/{run_id}/audit").status_code == 200
+    assert client.get(f"/runs/{run_id}/audit", params={"format": "csv"}).status_code == 200
+    assert client.get("/chat").status_code == 405
+    assert client.post(f"/runs/{run_id}").status_code == 405
+    assert client.get("/ingest/slip").status_code == 405
+    assert client.get("/ingest/notice").status_code == 405
+    assert client.get("/nope").status_code == 404
+
+
 def test_chat_read_answers_and_replays():
     r = client.post("/chat", json={"query": "Show payroll for EMP_042 for 2026-03."})
     assert r.status_code == 200, r.text
