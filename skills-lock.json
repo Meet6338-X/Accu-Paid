@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "eval-engineering": {
+      "source": "langchain-ai/langchain-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/eval-engineering/SKILL.md",
+      "computedHash": "f16c54616690a803e7fd6398d153320fd3aed71f6b98f5d6fcae992eef51e907"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    }
+  }
+}

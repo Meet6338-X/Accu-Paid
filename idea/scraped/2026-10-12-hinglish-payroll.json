@@ -1,0 +1,29 @@
+{
+  "created": "2026-10-12",
+  "keywords": "Hinglish payroll",
+  "trigger": "free ideation scrape (agent-reach: v2ex+jina+rss)",
+  "v2ex": [],
+  "rss_hn": [
+    {
+      "title": "Type-safe HTML templating in Zig",
+      "link": "https://lalinsky.com/2026/10/11/type-safe-html-templating-in-zig.html"
+    },
+    {
+      "title": "Fingerprints are the new cookies",
+      "link": "https://royfish.dev/fingerprints-are-the-new-cookies"
+    },
+    {
+      "title": "Deloitte falsified documents to evade tax on Abramovich's wealth",
+      "link": "https://www.bbc.com/news/articles/c64g1l5389kvo"
+    },
+    {
+      "title": "Postgres isn't slow, your storage is",
+      "link": "https://clickhouse.com/blog/posette-talk-recap-postgres-isnt-slow-your-storage-is"
+    },
+    {
+      "title": "Total Annihilation, rebuilt for modern computers",
+      "link": "https://nanolathe.gg"
+    }
+  ],
+  "jina": {}
+}

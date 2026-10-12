@@ -1,0 +1,50 @@
+[
+  {
+    "title": "We ran an AI red-teamer on 5 OpenRouter setups. One lost 81% of its scorer replies, the cheapest full scan cost $0.14",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3wp2c/we_ran_an_ai_redteamer_on_5_openrouter_setups_one/"
+  },
+  {
+    "title": "If you need an open-source or self-hosted alternative to LangSmith, I curated a list of 144 LLMOps tools",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3vrno/if_you_need_an_opensource_or_selfhosted/"
+  },
+  {
+    "title": "Here is how we architected a closed-loop system connecting MQTT (Drones/ESP32/BMS) -> Medallion Streaming -> Hybrid RAG -> LangGraph for autonomous actuation.",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3vnsc/here_is_how_we_architected_a_closedloop_system/"
+  },
+  {
+    "title": "Looking for Real-World Python Backend + AI Engineering Project Ideas That Can Help Me Stand Out in Interviews and the Job Market",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3pv3f/looking_for_realworld_python_backend_ai/"
+  },
+  {
+    "title": "What do you do when an agent hits its budget mid-run?",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3lkzn/what_do_you_do_when_an_agent_hits_its_budget/"
+  },
+  {
+    "title": "Before shipping a RAG retrieval change, do you know which queries might lose evidence?",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3j7a3/before_shipping_a_rag_retrieval_change_do_you/"
+  },
+  {
+    "title": "I built Betrox AI: A multi-worker agentic system that turns single high-level commands into full OS-level execution",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x3h9wi/i_built_betrox_ai_a_multiworker_agentic_system/"
+  },
+  {
+    "title": "Would your team actually pay for an independent RAG/AI agent evaluation audit?",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x38mpr/would_your_team_actually_pay_for_an_independent/"
+  },
+  {
+    "title": "How are you guys evaluating document parsers based on your documents? PDF parsing or whatever",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x35p7a/how_are_you_guys_evaluating_document_parsers/"
+  },
+  {
+    "title": "Does scoped session intent + read budgets stop \"in-scope\" agent abuse better than simple allowlists?",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x35iag/does_scoped_session_intent_read_budgets_stop/"
+  },
+  {
+    "title": "Free-tier LLM APIs kept returning 429s in my multi-agent app, so I built a multi-provider fallback. Here’s what I learned.",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x32kno/freetier_llm_apis_kept_returning_429s_in_my/"
+  },
+  {
+    "title": "Autonomous agent workflow for e-commerce listing creation - looking for architecture & GitHub recommendations",
+    "link": "https://www.reddit.com/r/LangChain/comments/1x2jk3n/autonomous_agent_workflow_for_ecommerce_listing/"
+  }
+]
