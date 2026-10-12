@@ -35,6 +35,17 @@ export const api = {
     if (!res.ok) throw { status: res.status, detail: data.detail || res.statusText };
     return data;
   },
+  anyfile: async ({ kind, mapping, file, validateOnly }) => {
+    const fd = new FormData();
+    fd.append('kind', kind || '');
+    fd.append('mapping', mapping || '');
+    fd.append('file', file);
+    fd.append('validate_only', validateOnly ? 'true' : 'false');
+    const res = await fetch(BASE + '/ingest/file', { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw { status: res.status, detail: data.detail || res.statusText };
+    return data;
+  },
 };
 
 export const API_BASE = BASE;

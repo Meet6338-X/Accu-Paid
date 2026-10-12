@@ -228,6 +228,74 @@ def ingest_notice(req: NoticeIngest):
     return tools.notice_parse(NoticeParseInput(text=req.text))
 
 
+@app.post("/ingest/file")
+async def ingest_any_file(kind: str = Form(""),
+                          mapping: str = Form(""),
+                          file: UploadFile = File(...),
+                          month_default: str = Form(""),
+                          validate_only: bool = Form(False)):
+    """Any supported file (csv/xlsx/xls/json/txt/md/pdf). Omit mapping for AI
+    auto-map (LLM, else offline heuristic). Omit kind to auto-detect. Every
+    upload is a durable job: chunked commits + upsert + persisted report at
+    GET /ingest/jobs/{job_id}. Re-upload after a crash safely finishes."""
+    import json as _json
+
+    from db.anyfile import detect_kind, extract_rows_text, infer_mapping, parse_file
+    from db.import_csv import import_rows
+
+    try:
+        raw = await file.read()
+        rows = parse_file(file.filename or "upload.csv", raw)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    maps = None
+    if mapping.strip():
+        try:
+            maps = _json.loads(mapping)
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"bad mapping json: {e}")
+    try:
+        if rows and set(rows[0].keys()) == {"line"}:
+            kind = kind or detect_kind(rows)
+            rows = extract_rows_text(rows, kind)
+            maps = maps or {k: k for r in rows for k in r}
+            via = "llm-extract"
+        elif maps:
+            kind = kind or detect_kind(rows)
+            via = "explicit"
+        else:
+            kind, maps, via = infer_mapping(kind or None, rows)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    try:
+        report = import_rows(rows, kind, maps, app.state.db_path,
+                             month_default=month_default, validate_only=validate_only,
+                             filename=file.filename or "")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    report["mapping_via"] = via
+    return report
+
+
+@app.get("/ingest/jobs/{job_id}")
+def ingest_job(job_id: str):
+    import json as _json
+
+    from sqlalchemy import create_engine, select
+    from sqlalchemy.orm import Session
+
+    from db.models import IngestJob
+
+    with Session(create_engine(f"sqlite:///{app.state.db_path}")) as s:
+        job = s.execute(select(IngestJob).where(IngestJob.job_id == job_id)).scalar_one_or_none()
+    if job is None:
+        raise HTTPException(status_code=404, detail="unknown job_id")
+    return {"job_id": job.job_id, "kind": job.kind, "filename": job.filename,
+            "status": job.status, "total": job.total, "loaded": job.loaded,
+            "skipped": job.skipped, "created_at": job.created_at,
+            "report": _json.loads(job.report or "{}")}
+
+
 @app.post("/ingest/csv")
 async def ingest_csv_file(kind: str = Form(...),
                           mapping: str = Form(...),

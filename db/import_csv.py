@@ -41,10 +41,36 @@ GSTIN_RE = re.compile(r"^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$")
 def _num(v, what: str):
     if v is None or str(v).strip() == "":
         raise ValueError(f"{what} missing")
+    s = str(v).strip().replace(",", "").replace("₹", "").replace("Rs.", "").replace("Rs", "").strip()
     try:
-        return int(str(v).replace(",", "").strip())
+        return int(float(s))
     except ValueError:
         raise ValueError(f"{what} not a number: {v!r}")
+
+
+MONTH_NAMES = {"jan": "01", "feb": "02", "mar": "03", "apr": "04", "may": "05", "jun": "06",
+               "jul": "07", "aug": "08", "sep": "09", "oct": "10", "nov": "11", "dec": "12"}
+
+
+def _shape_month(raw: str, default: str) -> str:
+    """Accept 2026-03, 03/2026, Mar 2026, March-26, datetime/date objects."""
+    if raw is None or str(raw).strip() == "":
+        return default
+    if hasattr(raw, "strftime"):
+        return raw.strftime("%Y-%m")
+    s = str(raw).strip()
+    m = re.match(r"^(20\d{2})-(\d{2})(?:-\d{2})?$", s)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}"
+    m = re.match(r"^(\d{1,2})[/\-](20\d{2})$", s)
+    if m:
+        return f"{m.group(2)}-{int(m.group(1)):02d}"
+    m = re.match(r"^([A-Za-z]+)[\s\-]*(\d{2,4})$", s)
+    if m and m.group(1)[:3].lower() in MONTH_NAMES:
+        yy = m.group(2)
+        yy = f"20{yy}" if len(yy) == 2 else yy
+        return f"{yy}-{MONTH_NAMES[m.group(1)[:3].lower()]}"
+    return s  # validator reports it if still bad
 
 
 def _bool(v) -> bool:
@@ -75,11 +101,28 @@ def import_csv(text: str, kind: str, mapping: dict, db_path: str = "accupaid.db"
     reader = csv.DictReader(io.StringIO(text))
     if not reader.fieldnames:
         raise ValueError("empty csv or missing header")
-    report: dict = {"kind": kind, "total": 0, "loaded": 0, "skipped": 0, "errors": []}
+    return import_rows(list(reader), kind, mapping, db_path, id_prefix, id_pad,
+                       month_default, validate_only)
+
+
+def import_rows(rows: list[dict], kind: str, mapping: dict, db_path: str = "accupaid.db",
+                id_prefix: str = "", id_pad: int = 3, month_default: str = "",
+                validate_only: bool = False, job_id: str = "", filename: str = "",
+                chunk: int = 200) -> dict:
+    """Durable core: chunked commits + natural-key upserts + persisted job ledger."""
+    import json as _json
+    import time as _time
+    import uuid as _uuid
+
+    from db.models import IngestJob
+
+    job_id = job_id or _uuid.uuid4().hex[:12]
+    report: dict = {"job_id": job_id, "kind": kind, "total": 0, "loaded": 0,
+                    "skipped": 0, "errors": []}
     engine = create_engine(f"sqlite:///{db_path}")
     Base.metadata.create_all(engine)
     with Session(engine) as s:
-        for i, row in enumerate(reader, start=2):  # 1-based + header
+        for i, row in enumerate(rows, start=2):  # 1-based + header
             report["total"] += 1
             try:
                 obj = _build(kind, _mapped(row, mapping), id_prefix, id_pad, month_default)
@@ -87,13 +130,25 @@ def import_csv(text: str, kind: str, mapping: dict, db_path: str = "accupaid.db"
                     _upsert(s, kind, obj)
             except ValueError as e:
                 report["skipped"] += 1
-                report["errors"].append({"row": i, "error": str(e)})
+                if len(report["errors"]) < 200:
+                    report["errors"].append({"row": i, "error": str(e)})
                 continue
             report["loaded"] += 1
+            if not validate_only and report["loaded"] % chunk == 0:
+                s.commit()  # crash-safe: finished chunks survive, re-upload finishes rest
         if not validate_only:
             s.commit()
-    if validate_only:
-        report["loaded"] = 0
+            status = "DONE"
+        else:
+            status = "DRYRUN"
+        if validate_only:
+            report["loaded"] = 0
+        s.add(IngestJob(job_id=job_id, kind=kind, filename=filename[:256], status=status,
+                        total=report["total"], loaded=report["loaded"],
+                        skipped=report["skipped"],
+                        report=_json.dumps(report, default=str)[:20000],
+                        created_at=_time.strftime("%Y-%m-%dT%H:%M:%S")))
+        s.commit()
     return report
 
 
@@ -131,9 +186,9 @@ def _build(kind: str, f: dict, prefix: str, pad: int, month_default: str):
         emp = _shape_id(f.get("emp_id", ""), prefix or "EMP_", pad or 3)
         if not EMP_ID_RE.match(emp):
             raise ValueError(f"bad emp_id {f.get('emp_id')!r}")
-        month = str(f.get("month") or month_default).strip()
+        month = _shape_month(f.get("month"), month_default)
         if not MONTH_RE.match(month):
-            raise ValueError(f"bad month {month!r}")
+            raise ValueError(f"bad month {f.get('month')!r} -> {month!r}")
         vals = {k: _num(f.get(k), k) for k in ("gross", "tds", "pf", "esi", "net")}
         return PayrollRow(emp_id=emp, month=month, lop_days=int(f.get("lop_days") or 0),
                           overtime_hrs=float(f.get("overtime_hrs") or 0), **vals)
