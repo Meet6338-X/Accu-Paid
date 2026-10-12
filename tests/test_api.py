@@ -136,3 +136,15 @@ def test_ingest_endpoints():
     n = client.post("/ingest/notice", json={"text": "Demand Rs 45,200 section 73 "
                                                    "due 2026-05-15 INV-2041"})
     assert n.json()["demand_amount"] == 45200
+
+
+def test_cors_preflight_from_console():
+    # Browser preflight (the 405s in uvicorn logs): must pass with ACAO header.
+    r = client.options("/health", headers={"Origin": "http://127.0.0.1:8501",
+                                           "Access-Control-Request-Method": "GET"})
+    assert r.status_code == 200
+    assert r.headers.get("access-control-allow-origin") == "http://127.0.0.1:8501"
+    p = client.post("/chat", json={"query": "Show payroll for EMP_007 for 2026-01."},
+                    headers={"Origin": "http://127.0.0.1:8501"})
+    assert p.status_code == 200
+    assert p.headers.get("access-control-allow-origin") == "http://127.0.0.1:8501"

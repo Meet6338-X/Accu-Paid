@@ -23,6 +23,16 @@ log = logging.getLogger("accupaid.llm")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 POLLINATIONS_URL = "https://text.pollinations.ai"
 
+_last: dict = {"backend": None, "ms": None, "ok": None, "at": None}
+
+
+def _note(backend: str, ms: float, ok: bool) -> None:
+    import time as _time
+
+    _last.update({"backend": backend, "ms": round(ms, 1), "ok": ok,
+                  "at": _time.strftime("%Y-%m-%dT%H:%M:%S")})
+    log.info("llm %s ok=%s %.0fms", backend, ok, ms)
+
 
 def _env(name: str, default: str = "") -> str:
     return os.getenv(name, default)
@@ -33,19 +43,30 @@ def backend_status() -> dict:
         "primary": "openrouter:" + ("configured" if _env("OPENROUTER_API_KEY") else "missing-key"),
         "fallback": "pollinations:available",
         "enhance": _env("ACCUPAID_LLM_ENHANCE") == "1",
+        "last": dict(_last),
     }
 
 
 def complete(messages: list[dict], max_tokens: int = 512, temperature: float = 0.2) -> str | None:
     """Try OpenRouter, then Pollinations. Returns text or None (offline-safe)."""
+    import time as _time
+
     if _env("OPENROUTER_API_KEY"):
+        t0 = _time.time()
         try:
-            return _openrouter(messages, max_tokens, temperature)
+            out = _openrouter(messages, max_tokens, temperature)
+            _note("openrouter", (_time.time() - t0) * 1000, True)
+            return out
         except Exception as e:  # noqa: BLE001 — fallback must survive anything
+            _note("openrouter", (_time.time() - t0) * 1000, False)
             log.warning("openrouter failed, trying fallback: %s", e)
+    t0 = _time.time()
     try:
-        return _pollinations(messages, max_tokens)
+        out = _pollinations(messages, max_tokens)
+        _note("pollinations", (_time.time() - t0) * 1000, True)
+        return out
     except Exception as e:  # noqa: BLE001
+        _note("pollinations", (_time.time() - t0) * 1000, False)
         log.warning("pollinations fallback failed: %s", e)
         return None
 
