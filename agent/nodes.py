@@ -264,12 +264,24 @@ def risk_gate_node(state: dict) -> dict:
     force = (bool(state.get("escalate"))
              or ver.get("verdict") in ("needs_approval", "escalate")
              or bool(tool_gate.get("needs_approval"))
-             or out.get("proposal") == "HOLD")
+             or out.get("proposal") == "HOLD"
+             or _commit_intent(state))
     needs = gate["needs_approval"] or force
     reasons = list(gate["reasons"]) + (["verify:" + p for p in ver.get("problems", [])] if force else [])
+    if _commit_intent(state):
+        reasons.append(f"commit_intent={state.get('route')}")
     return {"risk": {**gate, "needs_approval": needs, "reasons": reasons,
                      "verdict": "HOLD" if needs else "AUTO_OK"},
             "needs_approval": needs}
+
+
+COMMIT_WORDS = ("apply", "pay", "commit", "approve", "lagao", "book", "proceed", "karna hai")
+
+
+def _commit_intent(state: dict) -> bool:
+    if state.get("route") not in ("leave", "vendor"):
+        return False
+    return any(w in state.get("normalized", "") for w in COMMIT_WORDS)
 
 
 # --- 7. human_approval (graph pauses BEFORE this node when needs_approval) ---
