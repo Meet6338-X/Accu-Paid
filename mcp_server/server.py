@@ -219,7 +219,7 @@ def notice_parse(inp: NoticeParseInput) -> dict:
     demand = max(amounts) if amounts else None
     gate = risk_gate(invoiced=demand or 0, po=0) if demand else {"needs_approval": False,
                                                                 "reasons": [], "verdict": "AUTO_OK"}
-    proposal = "HOLD" if (demand and demand > 10000) or linked else "REVIEW"
+    proposal = "HOLD" if (demand and demand > 10000) else ("REVIEW" if (linked or demand) else "CLEAR")
     return {
         "demand_amount": demand, "due_date": due_m.group(1) if due_m else None,
         "section": sec_m.group(1) if sec_m else None, "linked_invoices": linked,

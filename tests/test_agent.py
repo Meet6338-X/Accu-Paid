@@ -36,11 +36,15 @@ def test_route_payroll_and_validation_loop_escalates():
     assert r2.get("escalate") is True  # max 2 loops then human
 
 
-def test_ambiguous_date_escalates():
+def test_ambiguous_date_assumed_ddmm_and_gated():
     s = nodes.normalize({"query": "leave 03/04 se 05/04 tak EMP_042 ka EL lagao"})
     assert s["flags"].get("ambiguous_date") == "03/04"
-    r = nodes.route_query({**s, "loops": 1})
-    assert r.get("escalate") is True
+    assert s["entities"]["from_date"] == "2026-04-03"  # IN-locale DD/MM assumption
+    assert s["flags"].get("date_assumed")
+    r = nodes.route_query({**s, "query": "leave 03/04 se 05/04 tak EMP_042 ka EL lagao"})
+    assert not r.get("escalate")
+    g = nodes.risk_gate_node({**s, "tool_output": {"draft": True}, "verification": {}})
+    assert g["needs_approval"] is True  # assumption always surfaces for human confirm
 
 
 def test_read_path_answers_without_approval(tmp_path):
