@@ -25,10 +25,11 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from agent.graph import approve_run, build_graph, get_run, run_chat
 from app.schemas import ApproveRequest, ChatRequest, NoticeIngest, SlipIngest
+from db.import_csv import import_csv
 from db.seed import seed
 from mcp_server import server as tools
 from mcp_server.guards import redact_pii, sign_approval, verify_approval
@@ -83,7 +84,7 @@ def root():
         "status": "ok",
         "endpoints": ["/chat", "/approve/{run_id}", "/runs/{run_id}",
                       "/runs/{run_id}/audit", "/ingest/slip", "/ingest/notice",
-                      "/health", "/docs"],
+                      "/ingest/csv", "/health", "/docs"],
     }
 
 
@@ -225,6 +226,30 @@ def ingest_slip(req: SlipIngest):
 @app.post("/ingest/notice")
 def ingest_notice(req: NoticeIngest):
     return tools.notice_parse(NoticeParseInput(text=req.text))
+
+
+@app.post("/ingest/csv")
+async def ingest_csv_file(kind: str = Form(...),
+                          mapping: str = Form(...),
+                          file: UploadFile = File(...),
+                          id_prefix: str = Form(""),
+                          id_pad: int = Form(3),
+                          month_default: str = Form(""),
+                          validate_only: bool = Form(False)):
+    """Load YOUR csv into employees|payroll|invoices. mapping is JSON
+    {csv_column: field}. Bad rows are skipped with reasons (see report)."""
+    import json as _json
+
+    try:
+        text = (await file.read()).decode("utf-8-sig")
+        maps = _json.loads(mapping)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"unreadable file/mapping: {e}")
+    try:
+        return import_csv(text, kind, maps, app.state.db_path, id_prefix, id_pad,
+                          month_default, validate_only)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 
 def _redacted_state(st: dict) -> dict:

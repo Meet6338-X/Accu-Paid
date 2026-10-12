@@ -73,6 +73,29 @@ python evals/harness.py       # release gates (see below)
 
 Endpoints (`app/main.py`): `GET /`, `GET /health`, `POST /chat`, `POST /approve/{run_id}`, `GET /runs/{run_id}`, `GET /runs/{run_id}/audit` (JSON/CSV), `POST /ingest/slip`, `POST /ingest/notice`. Interactive console (`frontend/`, React+Vite): live pipeline chat, approval cards with expiry countdown, run replay timeline, slip/notice ingest, endpoint cross-check. ChatOps stubs (`ui/chatops.py`): signed Slack/WhatsApp approve buttons. LLM (`llm/client.py`): OpenRouter primary, Pollinations.ai free fallback, offline-safe; set `OPENROUTER_API_KEY` + `ACCUPAID_LLM_ENHANCE=1` for summary polish, else pure rule-based. Env: `OPENROUTER_API_KEY`, `LLM_MODEL`, `LANGSMITH_API_KEY`, `QDRANT_URL`, `MCP_URL`, `APPROVAL_HMAC_SECRET`.
 
+## Import your data (any CSV)
+
+`POST /ingest/csv` loads **your** employees, payroll, or invoice CSVs. Map your
+columns, preview with validate-only, then load — bad rows are skipped with reasons.
+
+```bash
+# 1. preview (writes nothing)
+curl -X POST http://127.0.0.1:8000/ingest/csv \
+  -F kind=payroll \
+  -F mapping='{"emp_id":"emp_id","month":"month","gross":"gross","tds":"tds","pf":"pf","esi":"esi","net":"net"}' \
+  -F month_default=2026-03 \
+  -F validate_only=true \
+  -F file=@pay.csv
+# {"kind":"payroll","total":60,"loaded":0,"skipped":2,
+#  "errors":[{"row":14,"error":"bad month '2026-13'..."}]}
+
+# 2. load (same call, validate_only=false) — re-runs are upserts, no dupes
+```
+
+Rules: IDs auto-shape (`EMP42`/`42` → `EMP_042`, `INV2041` → `INV-2041`); months
+must be `YYYY-MM`; amounts tolerate commas. Or use the console → Ingest tab →
+"Your CSV" panel (mapping editor + preview + error table, no curl needed).
+
 ## Evals (Sarvam gates — measured, reproducible)
 
 Dataset: `evals/dataset.jsonl` (120 cases: 60 clean, 48 tail Hinglish+typo, 12 adversarial). Each tail case runs **5×**, Wilson 95% CI reported; point pass rates rejected. Entity-WER = `(sub+del+ins)/slots` over `{emp_id, date, amount, invoice_id}`; amounts exact-match as integers. Case passes iff entities exact AND action exact AND (`must_cite` → cite present).
