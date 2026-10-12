@@ -1,0 +1,12 @@
+# Overtime-2026 [overtime]
+
+- Hourly rate: `hourly = MONTHLY_BASE / (OT_DIVISOR)`. MONTHLY_BASE and OT_DIVISOR are configurable. [overtime:01]
+- Overtime pay: `ot_pay = OT_MULTIPLIER * hourly * OT_HOURS`. OT_MULTIPLIER is configurable. [overtime:02]
+- Minimum block: count OT only if `minutes >= OT_MIN_BLOCK`. OT_MIN_BLOCK is configurable. [overtime:03]
+- Monthly cap: `OT_HOURS <= OT_CAP_HRS`. OT_CAP_HRS is configurable; excess needs explicit approval. [overtime:04]
+- Missing-OT dispute ("overtime missing"): verify biometric hours vs payroll OT_HOURS via payroll_lookup first. [overtime:05]
+- Threshold flag: `net-pay change > NET_CHANGE_FLAG` forces approval. NET_CHANGE_FLAG is configurable. [overtime:06]
+- Estimator is read-only: shows projected ot_pay with citation, never writes ledger directly. [overtime:07]
+- Currency mismatch rule: highlight diffs over `SLIP_DIFF_FLAG` (configurable). Default review point 500 units. [overtime:08]
+- Every OT answer cites `[overtime:chunk]` with hours, multiplier and rate shown. [overtime:09]
+- Eligibility by role/grade is configurable; never assume all staff get OT. [overtime:10]

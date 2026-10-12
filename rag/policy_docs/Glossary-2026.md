@@ -1,0 +1,12 @@
+# Glossary-2026 [glossary]
+
+- CTC = Cost to Company, total annual package; fixed + variable. Hinglish: `ctc, package, sallery package`. [glossary:01]
+- In-hand / net pay = `gross - pf - esi - tds - lop - other`. Hinglish: `in-hand, haath me, kam ayi, sallery kam`. [glossary:02]
+- TDS = tax deducted at source from salary. Hinglish: `tds, kata, katauti, jyada kata, tax cut`. [glossary:03]
+- PF = provident fund saving deducted from Basic+DA. Hinglish: `pf, pee-ef, fund kata`. [glossary:04]
+- ESI = employee state insurance for low-wage cover. Hinglish: `esi, ees-aaee, medical kata`. [glossary:05]
+- LOP = loss of pay for unpaid absence. Hinglish: `lop, absent kata, leave kata, salary cut`. [glossary:06]
+- GSTIN = vendor GST identity on invoice. Hinglish: `gstin, gst number, bill gst`. [glossary:07]
+- PO = purchase order amount to match invoice against. Hinglish: `po, order, bill, invois`. [glossary:08]
+- Typo map: `sallery->salary, EmP42/EMP42->EMP_042, INV2041->INV-2041, 03/04->confirm YYYY-MM-DD`. [glossary:09]
+- Retrieval rule: normalize Hinglish + typos first via this glossary, then query with `query:` prefix. [glossary:10]

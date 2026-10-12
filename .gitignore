@@ -20,6 +20,9 @@ venv/
 idea/research/*.pdf
 rag/policy_docs/*.pdf
 
+# Regenerable RAG keyword index (python rag/ingest.py)
+rag/index.jsonl
+
 # OS / editor
 .DS_Store
 Thumbs.db
