@@ -357,11 +357,21 @@ def format_response(state: dict) -> dict:
     out = state.get("tool_output", {}) or {}
     for c in state.get("citations", [])[:5]:
         claims.append({"cite": c})
+    summary = state.get("tool_summary", "")
+    if os.getenv("ACCUPAID_LLM_ENHANCE") == "1":
+        # Optional LLM polish (OpenRouter -> Pollinations). Rule-based text
+        # stays on any failure; amounts/cites never go through the model alone.
+        try:
+            from llm.client import enhance_summary
+
+            summary = enhance_summary(summary, state.get("citations", []))
+        except Exception:
+            pass
     result = {
         "status": "needs_approval" if state.get("needs_approval") else "answered",
         "route": state.get("route"),
         "entities": state.get("entities", {}),
-        "summary": state.get("tool_summary", ""),
+        "summary": summary,
         "risk": state.get("risk", {}),
         "verification": (state.get("verification", {}) or {}).get("verdict", "skipped"),
         "claims": claims, "cites": state.get("citations", []),
