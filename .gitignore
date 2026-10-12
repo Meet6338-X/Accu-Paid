@@ -27,6 +27,9 @@ rag/index.jsonl
 frontend/node_modules/
 frontend/dist/
 
+# Temp third-party datasets (see data/external/README.md)
+data/external/*.csv
+
 # OS / editor
 .DS_Store
 Thumbs.db
