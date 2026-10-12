@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AccuPaid — Hinglish payroll disputes + GST recon, approval-gated</title>
+<meta name="description" content="AccuPaid normalizes typo-filled Hinglish payroll queries, cites policy, shows a dry-run diff, and waits for your Approve. No unapproved money moves. Ever.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header id="site-header">
+  <div class="wrap head-in">
+    <a class="logo" href="#hero" aria-label="AccuPaid home">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 17l4-9 4 9M9.6 14h4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>AccuPaid</span>
+    </a>
+    <button id="nav-toggle" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <nav id="nav" aria-label="Primary">
+      <a href="#demo">Demo</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#evals">Eval gates</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+      <a class="btn small" href="#contact">Start free pilot</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- 1. HERO -->
+  <section id="hero" aria-labelledby="hero-h">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Built for Indian SME payroll ops · Hinglish-first · Approval-gated</p>
+        <h1 id="hero-h">Salary dispute aaya? 60 second me cited dry-run + Approve + audit.</h1>
+        <p class="sub">Type a typo-filled Hinglish query. AccuPaid normalizes it, cites the policy
+          chunk, shows the dry-run diff, and waits for your Approve. No unapproved money moves. Ever.</p>
+        <p class="cta-row">
+          <a class="btn" href="#contact">Start free pilot</a>
+          <a class="btn ghost" href="#evals">Read eval gates</a>
+        </p>
+        <p class="micro">SQLite → Postgres path · Qdrant RAG · LangSmith traces · PII redacted</p>
+      </div>
+      <div class="demo-card" id="demo" role="img" aria-label="Demo: a Hinglish salary query becomes a cited dry-run awaiting approval">
+        <p class="bubble in" id="demo-q">mera march ki salary kam ayi, TDS jyada kata? EMP_042</p>
+        <ol class="steps">
+          <li><strong>Normalized</strong> → EMP_042 · 2026-03 · TDS query</li>
+          <li><strong>Cited</strong> → [tds:04] slab loop + payroll row</li>
+          <li><strong>Dry-run</strong> → INR 4,200 overtime missing, net diff shown</li>
+        </ol>
+        <p class="demo-btns"><span class="btn small">Approve</span> <span class="btn small ghost">Reject with reason</span></p>
+        <p class="note">15-min signed link · idempotent · trace logged. Commit + audit + trace in under 60s.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. FOR WHOM -->
+  <section id="who" aria-labelledby="who-h">
+    <div class="wrap">
+      <h2 id="who-h">Made for the salary-day firefight.</h2>
+      <p>HR ops + payroll execs at 50–500 person companies on Keka / Zoho People. If Hinglish
+        queries pile up on Slack and WhatsApp and Excel recon eats 15+ hrs a week, this is your wedge.</p>
+      <ul class="ticks">
+        <li>Hinglish typos normalized (sallery, EMP42, INV2041, 03/04 traps)</li>
+        <li>Every amount re-checked (CoVe verify + 3-sample SelfCheck)</li>
+        <li>Nothing commits without you (signed approval + idempotency ledger)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3. FEATURES -->
+  <section id="features" aria-labelledby="feat-h">
+    <div class="wrap">
+      <h2 id="feat-h">Eight tools. One gate: your approval.</h2>
+      <div class="cards">
+        <article><h3>Voice-note intake</h3><p>WhatsApp audio + screenshot OCR → Hinglish text with confidence. Low-confidence spans flagged.</p></article>
+        <article><h3>Salary-slip parser</h3><p>PDF upload extracts gross, TDS, PF, net. Diffs over the configurable flag highlighted.</p></article>
+        <article><h3>Attendance-to-ledger close</h3><p>Biometric CSV → LOP auto-calc + overtime estimate + draft journal with cite.</p></article>
+        <article><h3>TDS + PF estimator</h3><p>What-if CTC / old-vs-new simulator. Delta table with cites. Never commits.</p></article>
+        <article><h3>GST notice parser</h3><p>Paste a notice or upload PDF → demand, due date, linked invoices → HOLD or PAY + risk score.</p></article>
+        <article><h3>Slack + WhatsApp approve</h3><p>Approve / reject with reason from chat. Signed buttons, per-run idempotency, 15-min expiry.</p></article>
+        <article><h3>Auditor export</h3><p>One-click CSV + JSON: trace_id, inputs, cites, approver identity.</p></article>
+        <article><h3>Guardrails</h3><p>PII redaction, 25s tool timeout + 3× retry, rate limits, full replay of any run_id.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. HOW -->
+  <section id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <h2 id="how-h">Normalize → Cite → Dry-run → Approve → Commit.</h2>
+      <ol class="how">
+        <li><strong>Normalize</strong> — glossary + typo map fix sallery, EMP42, INV2041, 03/04 dates.</li>
+        <li><strong>Cite</strong> — top-5 policy chunks; every policy claim gets [doc_id:chunk].</li>
+        <li><strong>Dry-run</strong> — payroll_lookup / vendor_recon / slip_parse run read-only. Diff shown.</li>
+        <li><strong>Approve</strong> — human verdict via UI, Slack, or WhatsApp. Expires in 15 min.</li>
+        <li><strong>Commit</strong> — vendor_commit writes once with an idempotency key. Audit + trace saved.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 5. EVAL GATES -->
+  <section id="evals" aria-labelledby="eval-h">
+    <div class="wrap">
+      <h2 id="eval-h">We ship only if all four gates pass.</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Gate</th><th scope="col">Threshold</th><th scope="col">What it means</th></tr></thead>
+        <tbody>
+          <tr><td>Entity-WER (tail)</td><td>≤ 7%</td><td>emp_id, date, amount, invoice slots on Hinglish + typo cases</td></tr>
+          <tr><td>Worst-slice TCR</td><td>≥ 65%</td><td>min slice: hinglish_typos / code-mixed GST / ambiguous dates</td></tr>
+          <tr><td>Unapproved commits</td><td>0</td><td>any commit without human_verdict = approve blocks release</td></tr>
+          <tr><td>P95 approve→commit</td><td>&lt; 8s</td><td>avg tokens ≤ 3500; Hindi 3× fertility budgeted</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">Tail cases run 5× with Wilson intervals. Point pass rates not accepted.
+        Thresholds never lowered to pass. Reproduce: <code>python evals/harness.py --project AccuPaid-startup</code>.</p>
+    </div>
+  </section>
+
+  <!-- 6. PRICING -->
+  <section id="pricing" aria-labelledby="price-h">
+    <div class="wrap">
+      <h2 id="price-h">Pilot free. Then pay per seat + per recon.</h2>
+      <div class="cards two">
+        <article><h3>Pilot</h3><p class="price">Free</p><p>30 days · up to 100 employees · 1 company. Approval queue + auditor export included.</p></article>
+        <article><h3>Paid</h3><p class="price">INR 199 <span>/ HR seat / mo</span></p><p>+ INR 15 / vendor recon over 200 / mo. Annual prepay: 2 months free. CA-partner tier on request.</p></article>
+      </div>
+      <p class="cta-row"><a class="btn" href="#contact">Start pilot</a></p>
+    </div>
+  </section>
+
+  <!-- 7. CONTACT -->
+  <section id="contact" aria-labelledby="contact-h">
+    <div class="wrap narrow">
+      <h2 id="contact-h">Get your pilot.</h2>
+      <p>Tell us headcount + HRMS + weekly dispute load. We reply with a pilot checklist.</p>
+      <form id="pilot-form" action="https://formsubmit.co/meetcode99@gmail.com" method="POST" novalidate>
+        <input type="hidden" name="_subject" value="AccuPaid pilot request">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="field">
+          <label for="f-name">Name *</label>
+          <input id="f-name" name="name" type="text" required autocomplete="name" minlength="2">
+          <p class="err" id="f-name-err" role="alert" hidden></p>
+        </div>
+        <div class="field">
+          <label for="f-email">Work email *</label>
+          <input id="f-email" name="email" type="email" required autocomplete="email">
+          <p class="err" id="f-email-err" role="alert" hidden></p>
+        </div>
+        <div class="field">
+          <label for="f-company">Company *</label>
+          <input id="f-company" name="company" type="text" required autocomplete="organization" minlength="2">
+          <p class="err" id="f-company-err" role="alert" hidden></p>
+        </div>
+        <div class="field">
+          <label for="f-head">Headcount *</label>
+          <select id="f-head" name="headcount" required>
+            <option value="">Select…</option>
+            <option>50–100</option><option>101–300</option><option>301–500</option>
+          </select>
+          <p class="err" id="f-head-err" role="alert" hidden></p>
+        </div>
+        <div class="field">
+          <label for="f-hrms">HRMS</label>
+          <select id="f-hrms" name="hrms">
+            <option>Keka</option><option>Zoho People</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-msg">Dispute load + message *</label>
+          <textarea id="f-msg" name="message" rows="4" required minlength="10" placeholder="e.g. ~20 Hinglish salary queries every salary week on WhatsApp"></textarea>
+          <p class="err" id="f-msg-err" role="alert" hidden></p>
+        </div>
+        <p class="err summary" id="form-err" role="alert" hidden></p>
+        <p class="ok" id="form-ok" role="status" hidden></p>
+        <button class="btn" type="submit" id="send">Request pilot</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <p>AccuPaid · Hinglish payroll disputes + GST recon with gated execution.</p>
+    <nav aria-label="Footer"><a href="#demo">Demo</a> · <a href="#evals">Evals</a> · <a href="#pricing">Pricing</a> · <a href="#contact">Contact</a></nav>
+    <p class="micro">© 2026 AccuPaid · Pilot build. No market claims without source + year.</p>
+  </div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>
