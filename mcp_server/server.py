@@ -310,12 +310,13 @@ except Exception:
     except Exception:
         mcp = None
 
-if mcp is not None:  # pragma: no cover — transport only
-    mcp.tool()(payroll_lookup)
-    mcp.tool()(leave_apply)
-    mcp.tool()(vendor_recon)
-    mcp.tool()(vendor_commit)
-    mcp.tool()(policy_search)
-    mcp.tool()(slip_parse)
-    mcp.tool()(notice_parse)
-    mcp.tool()(tds_simulate)
+if mcp is not None:  # pragma: no cover — transport only, best-effort
+    for _fn in (payroll_lookup, leave_apply, vendor_recon, vendor_commit,
+                policy_search, slip_parse, notice_parse, tds_simulate):
+        try:
+            mcp.tool()(_fn)
+        except Exception:
+            # Older/newer mcp SDKs validate signatures differently (e.g. they
+            # cannot resolve string annotations). The pure functions above are
+            # the contract; transport registration must never break imports.
+            continue
