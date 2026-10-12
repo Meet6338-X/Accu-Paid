@@ -8,39 +8,41 @@ const CSV_MAPS = {
 };
 
 function CsvPanel() {
-  const [kind, setKind] = useState('payroll');
-  const [mapping, setMapping] = useState(CSV_MAPS.payroll);
+  const [kind, setKind] = useState('');
+  const [mapping, setMapping] = useState('');
   const [file, setFile] = useState(null);
   const [validateOnly, setValidateOnly] = useState(true);
   const [rep, setRep] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
-  const pickKind = (k) => { setKind(k); setMapping(CSV_MAPS[k]); setRep(null); };
+  const pickKind = (k) => { setKind(k); setMapping(k ? CSV_MAPS[k] : ''); setRep(null); };
   const upload = async (e) => {
     e.preventDefault(); setErr(''); setRep(null);
-    if (!file) { setErr('Choose a .csv file first.'); return; }
+    if (!file) { setErr('Choose a file first (.csv .xlsx .json .pdf .txt).'); return; }
     setBusy(true);
     try {
-      setRep(await api.csv({ kind, mapping, file, idPad: 3, validateOnly }));
+      setRep(await api.anyfile({ kind, mapping, file, validateOnly }));
     } catch (ex) { setErr(ex.detail || 'upload failed'); }
     finally { setBusy(false); }
   };
   return (
     <form className="card" onSubmit={upload}>
-      <h3>Your CSV → database</h3>
-      <p className="muted">Map your columns, preview with validate-only, then load. Bad rows are skipped with reasons. IDs like EMP42 auto-shape to EMP_042.</p>
+      <h3>Your file → database</h3>
+      <p className="muted">Any payroll/HR/invoice file. Leave table + mapping blank for AI auto-detect (LLM, else offline aliases). IDs like EMP42 auto-shape. Uploads are durable jobs — re-submit after a crash to finish.</p>
       <div className="grid2">
-        <label>Table
+        <label>Table (blank = auto)
           <select value={kind} onChange={(e) => pickKind(e.target.value)}>
+            <option value="">auto-detect</option>
             <option value="payroll">payroll</option>
             <option value="employees">employees</option>
             <option value="invoices">invoices</option>
           </select>
         </label>
-        <label>File<input type="file" accept=".csv" onChange={(e) => setFile(e.target.files[0] || null)} /></label>
+        <label>File<input type="file" accept=".csv,.xlsx,.xls,.json,.txt,.md,.pdf" onChange={(e) => setFile(e.target.files[0] || null)} /></label>
       </div>
-      <label>Column mapping (JSON: your column → AccuPaid field)
-        <textarea rows={8} value={mapping} onChange={(e) => setMapping(e.target.value)} spellCheck={false} />
+      <label>Column mapping JSON (blank = AI auto-map)
+        <textarea rows={6} value={mapping} onChange={(e) => setMapping(e.target.value)} spellCheck={false}
+          placeholder='{"Employee ID": "emp_id", "Monthly Income": "gross"}' />
       </label>
       <label className="check"><input type="checkbox" checked={validateOnly}
         onChange={(e) => setValidateOnly(e.target.checked)} /> Validate only (preview, write nothing)</label>
@@ -48,7 +50,7 @@ function CsvPanel() {
       <button className="btn go" type="submit" disabled={busy}>{busy ? 'Uploading…' : validateOnly ? 'Preview' : 'Load into database'}</button>
       {rep && (
         <p className={rep.skipped === 0 ? 'ok-text' : 'warn-text'}>
-          {rep.loaded} loaded · {rep.skipped} skipped of {rep.total}
+          {rep.loaded} loaded · {rep.skipped} skipped of {rep.total} · via {rep.mapping_via} · job <code>{rep.job_id}</code>
         </p>
       )}
       {rep && rep.errors && rep.errors.length > 0 && (

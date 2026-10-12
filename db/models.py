@@ -73,3 +73,21 @@ class CommittedAction(Base):
     approver: Mapped[str] = mapped_column(String(120), default="")
 
     __table_args__ = (UniqueConstraint("run_id", "tool", "args_hash", name="uq_idempotency"),)
+
+
+class IngestJob(Base):
+    """Durable ingest ledger: every upload is a job with a persisted report.
+    Chunked commits + natural-key upserts make re-uploads safe, so a crash
+    mid-file never corrupts data — re-submit the same file to finish."""
+
+    __tablename__ = "ingest_jobs"
+
+    job_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16))
+    filename: Mapped[str] = mapped_column(String(256), default="")
+    status: Mapped[str] = mapped_column(String(16), default="DONE")  # DONE|DRYRUN|FAILED
+    total: Mapped[int] = mapped_column(Integer, default=0)
+    loaded: Mapped[int] = mapped_column(Integer, default=0)
+    skipped: Mapped[int] = mapped_column(Integer, default=0)
+    report: Mapped[str] = mapped_column(String(20000), default="{}")
+    created_at: Mapped[str] = mapped_column(String(32), default="")

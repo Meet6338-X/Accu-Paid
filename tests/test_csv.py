@@ -26,8 +26,8 @@ def test_employees_shape_and_skip(tmp_path):
     rep = import_csv(EMP_CSV, "employees",
                      {"emp_id": "emp_id", "name": "name", "dept": "dept", "ctc": "ctc"},
                      _fresh(tmp_path))
-    assert rep == {"kind": "employees", "total": 2, "loaded": 1, "skipped": 1,
-                   "errors": rep["errors"]}
+    assert rep["kind"] == "employees" and rep["total"] == 2
+    assert rep["loaded"] == 1 and rep["skipped"] == 1 and rep["job_id"]
     assert rep["errors"][0]["row"] == 3  # BAD ID
     with Session(create_engine(f"sqlite:///{_fresh(tmp_path)}")) as s:
         assert s.execute(select(Employee).where(Employee.emp_id == "EMP_042")).scalar_one()
