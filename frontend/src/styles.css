@@ -92,6 +92,8 @@ textarea { resize: vertical; }
 .chip:hover { border-color: var(--accent); }
 .composer { display: flex; gap: .6rem; }
 .composer input { flex: 1; }
+.check { display: flex; gap: .5rem; align-items: center; font-weight: 600; }
+.check input { width: auto; min-height: var(--tap); }
 
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
 .timeline li { display: grid; grid-template-columns: 90px 1fr; gap: .6rem; border-left: 3px solid var(--accent); padding-left: .7rem; }
