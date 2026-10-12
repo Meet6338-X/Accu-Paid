@@ -76,18 +76,23 @@ class CommittedAction(Base):
 
 
 class IngestJob(Base):
-    """Durable ingest ledger: every upload is a job with a persisted report.
-    Chunked commits + natural-key upserts make re-uploads safe, so a crash
-    mid-file never corrupts data — re-submit the same file to finish."""
+    """Durable ingest ledger: every upload is a content-addressed job
+    (job_id = sha256(file)[:12]) with a persisted report. Chunked commits +
+    natural-key upserts make re-uploads safe, so a crash mid-file never
+    corrupts data — re-submit the same file to finish."""
 
     __tablename__ = "ingest_jobs"
 
     job_id: Mapped[str] = mapped_column(String(32), primary_key=True)
     kind: Mapped[str] = mapped_column(String(16))
     filename: Mapped[str] = mapped_column(String(256), default="")
-    status: Mapped[str] = mapped_column(String(16), default="DONE")  # DONE|DRYRUN|FAILED
+    status: Mapped[str] = mapped_column(String(16), default="DONE")  # QUEUED|RUNNING|DONE|DRYRUN|FAILED|CANCELLED
     total: Mapped[int] = mapped_column(Integer, default=0)
     loaded: Mapped[int] = mapped_column(Integer, default=0)
     skipped: Mapped[int] = mapped_column(Integer, default=0)
     report: Mapped[str] = mapped_column(String(20000), default="{}")
     created_at: Mapped[str] = mapped_column(String(32), default="")
+    file_sha: Mapped[str] = mapped_column(String(64), default="", index=True)
+    progress: Mapped[int] = mapped_column(Integer, default=100)  # 0-100
+    stage: Mapped[str] = mapped_column(String(32), default="finalize")
+    mode: Mapped[str] = mapped_column(String(16), default="inline")  # inline|temporal

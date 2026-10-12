@@ -46,6 +46,26 @@ export const api = {
     if (!res.ok) throw { status: res.status, detail: data.detail || res.statusText };
     return data;
   },
+  temporal: async ({ kind, mapping, file, monthDefault, validateOnly, pii }) => {
+    const fd = new FormData();
+    fd.append('kind', kind || '');
+    fd.append('mapping', mapping || '');
+    fd.append('file', file);
+    fd.append('month_default', monthDefault || '');
+    fd.append('validate_only', validateOnly ? 'true' : 'false');
+    fd.append('pii', pii || 'report');
+    const res = await fetch(BASE + '/ingest/file-temporal', { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok && res.status !== 202) throw { status: res.status, detail: data.detail || res.statusText };
+    return data;
+  },
+  job: (jobId) => req(`/ingest/jobs/${jobId}`),
+  cancelJob: async (jobId) => {
+    const res = await fetch(BASE + `/ingest/jobs/${jobId}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw { status: res.status, detail: data.detail || res.statusText };
+    return data;
+  },
 };
 
 export const API_BASE = BASE;
