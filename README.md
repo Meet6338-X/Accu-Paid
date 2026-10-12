@@ -65,12 +65,13 @@ Server: [`mcp_server/server.py`](mcp_server/server.py) · Strict models: [`mcp_s
 pip install -r requirements.txt
 cp .env.example .env          # Windows: copy .env.example .env
 python db/seed.py             # 20 employees + 60 payroll rows + 15 invoices (SQLite)
-uvicorn app.main:app --reload # POST /chat, POST /approve/{run_id}, GET /runs/{run_id}
-streamlit run ui/approve.py   # approval queue UI
+uvicorn app.main:app --reload # API :8000 — /chat, /approve, /runs, /ingest, /health
+cd frontend && npm install && npm run dev   # console :8501 (chat, runs, ingest, health)
 python evals/harness.py       # release gates (see below)
+# ...or double-click start.bat (Windows) for API + console together.
 ```
 
-Endpoints (`app/main.py`): `POST /chat`, `POST /approve/{run_id}`, `GET /runs/{run_id}`, `GET /runs/{run_id}/audit` (JSON/CSV), `POST /ingest/slip`, `POST /ingest/notice`. ChatOps stubs (`ui/chatops.py`): signed Slack/WhatsApp approve buttons. Env: `OPENAI_API_KEY` or `GROQ_API_KEY`, `LANGSMITH_API_KEY`, `QDRANT_URL`, `MCP_URL`, `APPROVAL_HMAC_SECRET`.
+Endpoints (`app/main.py`): `GET /`, `GET /health`, `POST /chat`, `POST /approve/{run_id}`, `GET /runs/{run_id}`, `GET /runs/{run_id}/audit` (JSON/CSV), `POST /ingest/slip`, `POST /ingest/notice`. Interactive console (`frontend/`, React+Vite): live pipeline chat, approval cards with expiry countdown, run replay timeline, slip/notice ingest, endpoint cross-check. ChatOps stubs (`ui/chatops.py`): signed Slack/WhatsApp approve buttons. LLM (`llm/client.py`): OpenRouter primary, Pollinations.ai free fallback, offline-safe; set `OPENROUTER_API_KEY` + `ACCUPAID_LLM_ENHANCE=1` for summary polish, else pure rule-based. Env: `OPENROUTER_API_KEY`, `LLM_MODEL`, `LANGSMITH_API_KEY`, `QDRANT_URL`, `MCP_URL`, `APPROVAL_HMAC_SECRET`.
 
 ## Evals (Sarvam gates — measured, reproducible)
 
@@ -104,7 +105,8 @@ mcp_server/     # server.py (8 tools), models.py (strict Pydantic), guards.py (r
 rag/            # ingest.py (350-tok chunks, 50 overlap), policy_docs/ (PF/ESI/TDS/GST/LOP/overtime/glossary)
 db/             # models.py, seed.py (deterministic SQLite seed)
 evals/          # harness.py, build_dataset.py, dataset.jsonl (120), tail_cases.md
-ui/             # approve.py (Streamlit queue), chatops.py (signed-button stubs)
+ui/             # chatops.py (Slack/WhatsApp signed-button stubs)
+frontend/       # React+Vite console (chat, runs, ingest, health) on :8501
 tests/          # test_data_tools/agent/api/rag/evals/ui.py — 57 tests
 docs/           # BUILD-SPEC.md + marketing site (index.html, styles.css, app.js) for GitHub Pages
 idea/           # accupaid.md, STARTUP-PLAN, MASTER-PROMPT, REDDIT-FINDINGS, panel, research index

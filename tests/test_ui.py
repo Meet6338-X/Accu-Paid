@@ -50,3 +50,18 @@ def test_format_message_with_cites():
                                  "summary": "net diff 4200",
                                  "cites": ["[tds:04]", "[overtime:05]"]})
     assert "answered" in msg and "[tds:04]" in msg
+
+
+def test_react_console_present_and_streamlit_gone():
+    import json
+
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    assert not os.path.exists(os.path.join(root, "ui", "approve.py"))
+    pkg = json.load(open(os.path.join(root, "frontend", "package.json"), encoding="utf-8"))
+    assert pkg["dependencies"]["react"] and pkg["devDependencies"]["vite"]
+    for f in ("index.html", "vite.config.js", "src/main.jsx", "src/App.jsx",
+              "src/api.js", "src/Chat.jsx", "src/Runs.jsx", "src/Ingest.jsx",
+              "src/Health.jsx", "src/styles.css"):
+        assert os.path.exists(os.path.join(root, "frontend", f)), f
+    req = open(os.path.join(root, "requirements.txt"), encoding="utf-8").read()
+    assert "streamlit" not in req
