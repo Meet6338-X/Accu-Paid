@@ -9,9 +9,11 @@ const CHIPS = [
   'Parse this notice: demand of Rs 45,200 under section 73 due 2026-05-15 for INV-2041.',
   'Simulate TDS for CTC 1200000 under old vs new regime.',
 ];
-const REASONS = ['verified with payroll sheet', 'checked with vendor', 'CA confirmed', 'typo, ignore'];
 
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const DEMO_QUERY = 'mera march ki salary kam ayi, TDS jyada kata? EMP_042';
+const REASONS = ['verified with payroll sheet', 'checked with vendor', 'CA confirmed', 'typo, ignore'];
 
 function useTypewriter(text, active) {
   const [out, setOut] = useState(active ? '' : text);
@@ -89,7 +91,7 @@ function ResultCard({ result, animate }) {
   );
 }
 
-function Approval({ pending, onDone }) {
+function Approval({ pending, onDone, coach }) {
   const [reason, setReason] = useState('');
   const [left, setLeft] = useState(pending.ttl_seconds || 900);
   const [busy, setBusy] = useState(false);
@@ -108,11 +110,12 @@ function Approval({ pending, onDone }) {
   };
   const mm = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   return (
-    <div className="card approve">
+    <div className={`card approve${coach ? ' coach' : ''}`}>
       <div className="card-head">
         <span className="badge needs_approval">needs approval</span>
         <span className="muted" title="Signature expiry">expires in {mm}</span>
       </div>
+      {coach && <p className="coach-hint" role="status">This is the gate — nothing commits until you press Approve. Try it.</p>}
       <div className="ttl" aria-hidden="true"><span style={{ width: `${(left / total) * 100}%` }} /></div>
       <ul>{pending.reasons.map((r) => <li key={r}><code>{r}</code></li>)}</ul>
       <label htmlFor="ap-reason">Reason (optional annotation)</label>
@@ -138,8 +141,11 @@ export default function Chat({ remember }) {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [celebrate, setCelebrate] = useState(0);
+  const [demoArmed, setDemoArmed] = useState(false);
   const bottom = useRef(null);
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth' }); }, [msgs]);
+
+  const runDemo = () => { setDemoArmed(true); send(DEMO_QUERY); };
 
   const send = async (text) => {
     const q = (text ?? input).trim();
@@ -171,8 +177,20 @@ export default function Chat({ remember }) {
       <div className="thread" aria-live="polite">
         {msgs.length === 0 && (
           <div className="empty">
+            <svg className="empty-art" viewBox="0 0 120 90" aria-hidden="true">
+              <rect x="8" y="10" width="104" height="70" rx="10" fill="none" stroke="currentColor" strokeWidth="2"/>
+              <path d="M20 32h80M20 44h56M20 56h68" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity=".55"/>
+              <circle cx="92" cy="62" r="12" fill="none" stroke="currentColor" strokeWidth="2"/>
+              <path d="M87 62l3.5 3.5L97 59" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
             <h2>Salary dispute aaya?</h2>
-            <p className="muted">Try a typo-filled Hinglish query — watch normalize → cite → dry-run → approve happen live.</p>
+            <p className="muted">Watch a typo-filled Hinglish query turn into a cited dry-run — then you approve it. Live, in 60 seconds.</p>
+            <button className="btn go big" onClick={runDemo} disabled={busy}>▶ Run the 60-second demo</button>
+            <div className="statline" aria-label="Measured results">
+              <span><strong>120/120</strong> evals</span>
+              <span><strong>0</strong> unapproved</span>
+              <span><strong>3.0s</strong> P95</span>
+            </div>
           </div>
         )}
         {msgs.map((m) => m.who === 'you' ? (
@@ -182,7 +200,7 @@ export default function Chat({ remember }) {
             {m.working && (<><Pipeline live /> <p className="muted">working the pipeline…</p></>)}
             {m.error && <p className="err" role="alert">{m.error}</p>}
             {m.data && m.data.status === 'needs_approval' && !m.data.result && (
-              <Approval pending={m.data} onDone={(res) => resolveApproval(m.id, res)} />
+              <Approval pending={m.data} coach={demoArmed} onDone={(res) => { setDemoArmed(false); resolveApproval(m.id, res); }} />
             )}
             {m.data && m.data.result && (<><Pipeline snapTo={99} /><ResultCard result={m.data.result} animate /></>)}
             {m.data && m.data.status === 'answered' && !m.data.result && <p className="muted">done.</p>}
@@ -191,7 +209,7 @@ export default function Chat({ remember }) {
         <div ref={bottom} />
       </div>
       <div className="chips" role="group" aria-label="Example queries">
-        {CHIPS.map((c) => <button key={c} className="chip" disabled={busy} onClick={() => send(c)}>{c.length > 52 ? c.slice(0, 52) + '…' : c}</button>)}
+        {CHIPS.map((c) => <button key={c} className="chip" disabled={busy} onClick={() => send(c)}>{c}</button>)}
       </div>
       <form className="composer" onSubmit={(e) => { e.preventDefault(); send(); }}>
         <label className="sr" htmlFor="chat-in">Ask AccuPaid</label>

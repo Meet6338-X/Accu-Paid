@@ -61,9 +61,9 @@ export default function App() {
       </header>
 
       <div className="layout">
+        {history.length > 0 && (
         <aside className="history" aria-label="Recent runs">
           <h2>Recent runs</h2>
-          {history.length === 0 && <p className="muted">No runs yet — ask something in Chat.</p>}
           <ul>
             {history.map((h) => (
               <li key={h.runId}>
@@ -75,6 +75,7 @@ export default function App() {
             ))}
           </ul>
         </aside>
+        )}
 
         <main className="view">
           {tab === 'chat' && <Chat remember={remember} />}
