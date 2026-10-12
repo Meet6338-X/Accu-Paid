@@ -26,6 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 from agent.graph import approve_run, build_graph, get_run, run_chat
 from app.schemas import ApproveRequest, ChatRequest, NoticeIngest, SlipIngest
@@ -74,6 +75,14 @@ def _maybe_langsmith() -> str | None:
 
 
 app = FastAPI(title="AccuPaid", version="0.1.0", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in
+                   os.getenv("CORS_ORIGINS",
+                             "http://127.0.0.1:8501,http://localhost:8501").split(",")],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

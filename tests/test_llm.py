@@ -77,3 +77,15 @@ def test_backend_status_shape(monkeypatch):
     assert s["primary"] == "openrouter:missing-key"
     assert s["fallback"] == "pollinations:available"
     assert s["enhance"] is False
+    assert set(s["last"]) == {"backend", "ms", "ok", "at"}
+
+
+def test_last_call_tracked(monkeypatch):
+    def fake(req, timeout=None):
+        return _FakeResp(b"ok-text")
+
+    _patch(monkeypatch, fake)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    assert llm.complete([{"role": "user", "content": "hi"}]) == "ok-text"
+    assert llm.backend_status()["last"]["backend"] == "pollinations"
+    assert llm.backend_status()["last"]["ok"] is True
