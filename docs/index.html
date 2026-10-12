@@ -3,8 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AccuPaid — Hinglish payroll disputes + GST recon, approval-gated</title>
-<meta name="description" content="AccuPaid normalizes typo-filled Hinglish payroll queries, cites policy, shows a dry-run diff, and waits for your Approve. No unapproved money moves. Ever.">
+<title>AccuPaid — Approval-gated payroll disputes + GST recon for Indian SMEs</title>
+<meta name="description" content="AccuPaid resolves Hinglish salary disputes and vendor GST recon with cited dry-runs and signed human approval. No unapproved money moves. Free 30-day pilot.">
+<meta property="og:title" content="AccuPaid — approval-gated payroll agent">
+<meta property="og:description" content="Normalize → cite → dry-run → approve → commit. Eval-gated, audit-trailed.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='1' y='1' width='24' height='24' rx='6' fill='%232dd4a7'/%3E%3Cpath d='M8 17l4-9 4 9M9.6 14h4.8' fill='none' stroke='%2306231B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,111 +24,166 @@
       <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <nav id="nav" aria-label="Primary">
-      <a href="#demo">Demo</a>
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#evals">Eval gates</a>
+      <a href="#platform">Platform</a>
+      <a href="#how">How to use</a>
+      <a href="#security">Security</a>
+      <a href="#evals">Proof</a>
       <a href="#pricing">Pricing</a>
-      <a href="#contact">Contact</a>
       <a class="btn small" href="#contact">Start free pilot</a>
     </nav>
   </div>
 </header>
 
 <main id="main">
-  <!-- 1. HERO -->
+  <!-- HERO -->
   <section id="hero" aria-labelledby="hero-h">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">Built for Indian SME payroll ops · Hinglish-first · Approval-gated</p>
-        <h1 id="hero-h">Salary dispute aaya? 60 second me cited dry-run + Approve + audit.</h1>
-        <p class="sub">Type a typo-filled Hinglish query. AccuPaid normalizes it, cites the policy
-          chunk, shows the dry-run diff, and waits for your Approve. No unapproved money moves. Ever.</p>
+        <p class="eyebrow">Hinglish-first · Approval-gated · Eval-proven</p>
+        <h1 id="hero-h">Salary disputes resolved in 60 seconds. Zero unapproved money moves.</h1>
+        <p class="sub">AccuPaid turns typo-filled Hinglish payroll queries and vendor GST notices into
+          cited dry-runs that wait for your one-tap Approve — with a full audit trail your CA can trust.</p>
         <p class="cta-row">
           <a class="btn" href="#contact">Start free pilot</a>
-          <a class="btn ghost" href="#evals">Read eval gates</a>
+          <a class="btn ghost" href="#how">See how it works</a>
         </p>
-        <p class="micro">SQLite → Postgres path · Qdrant RAG · LangSmith traces · PII redacted</p>
+        <p class="micro">Free 30-day pilot · Up to 100 employees · No credit card</p>
       </div>
-      <div class="demo-card" id="demo" role="img" aria-label="Demo: a Hinglish salary query becomes a cited dry-run awaiting approval">
-        <p class="bubble in" id="demo-q">mera march ki salary kam ayi, TDS jyada kata? EMP_042</p>
+      <div class="dash" role="img" aria-label="Product preview: a Hinglish query becomes a cited dry-run awaiting approval">
+        <div class="dash-bar"><span></span><span></span><span></span><em>AccuPaid Console</em></div>
+        <p class="bubble in">mera march ki salary kam ayi, TDS jyada kata? EMP_042</p>
         <ol class="steps">
           <li><strong>Normalized</strong> → EMP_042 · 2026-03 · TDS query</li>
           <li><strong>Cited</strong> → [tds:04] slab loop + payroll row</li>
-          <li><strong>Dry-run</strong> → INR 4,200 overtime missing, net diff shown</li>
+          <li><strong>Dry-run</strong> → INR 4,200 overtime missing</li>
         </ol>
-        <p class="demo-btns"><span class="btn small">Approve</span> <span class="btn small ghost">Reject with reason</span></p>
-        <p class="note">15-min signed link · idempotent · trace logged. Commit + audit + trace in under 60s.</p>
+        <p class="demo-btns"><span class="btn small">Approve</span> <span class="btn small ghost">Reject</span></p>
+        <p class="note">15-min signed link · idempotent · trace logged</p>
       </div>
     </div>
-  </section>
-
-  <!-- 2. FOR WHOM -->
-  <section id="who" aria-labelledby="who-h">
-    <div class="wrap">
-      <h2 id="who-h">Made for the salary-day firefight.</h2>
-      <p>HR ops + payroll execs at 50–500 person companies on Keka / Zoho People. If Hinglish
-        queries pile up on Slack and WhatsApp and Excel recon eats 15+ hrs a week, this is your wedge.</p>
-      <ul class="ticks">
-        <li>Hinglish typos normalized (sallery, EMP42, INV2041, 03/04 traps)</li>
-        <li>Every amount re-checked (CoVe verify + 3-sample SelfCheck)</li>
-        <li>Nothing commits without you (signed approval + idempotency ledger)</li>
-      </ul>
+    <div class="wrap strip" aria-label="Compatibility">
+      <span>Built for HR teams on</span><strong>Keka</strong><strong>Zoho People</strong>
+      <span>· approves over</span><strong>Slack</strong><strong>WhatsApp</strong>
+      <span>· exports</span><strong>CSV + audit PDF-trail</strong>
     </div>
   </section>
 
-  <!-- 3. FEATURES -->
-  <section id="features" aria-labelledby="feat-h">
+  <!-- METRICS -->
+  <section id="metrics" aria-labelledby="metrics-h">
     <div class="wrap">
-      <h2 id="feat-h">Eight tools. One gate: your approval.</h2>
-      <div class="cards">
-        <article><h3>Voice-note intake</h3><p>WhatsApp audio + screenshot OCR → Hinglish text with confidence. Low-confidence spans flagged.</p></article>
-        <article><h3>Salary-slip parser</h3><p>PDF upload extracts gross, TDS, PF, net. Diffs over the configurable flag highlighted.</p></article>
-        <article><h3>Attendance-to-ledger close</h3><p>Biometric CSV → LOP auto-calc + overtime estimate + draft journal with cite.</p></article>
-        <article><h3>TDS + PF estimator</h3><p>What-if CTC / old-vs-new simulator. Delta table with cites. Never commits.</p></article>
-        <article><h3>GST notice parser</h3><p>Paste a notice or upload PDF → demand, due date, linked invoices → HOLD or PAY + risk score.</p></article>
-        <article><h3>Slack + WhatsApp approve</h3><p>Approve / reject with reason from chat. Signed buttons, per-run idempotency, 15-min expiry.</p></article>
-        <article><h3>Auditor export</h3><p>One-click CSV + JSON: trace_id, inputs, cites, approver identity.</p></article>
-        <article><h3>Guardrails</h3><p>PII redaction, 25s tool timeout + 3× retry, rate limits, full replay of any run_id.</p></article>
+      <h2 id="metrics-h" class="sr">Measured results</h2>
+      <div class="cards4">
+        <div class="stat"><strong>120/120</strong><span>eval cases passing</span></div>
+        <div class="stat"><strong>0.000</strong><span>entity error rate (tail)</span></div>
+        <div class="stat"><strong>1.000</strong><span>worst-slice completion</span></div>
+        <div class="stat"><strong>0</strong><span>unapproved commits</span></div>
       </div>
+      <p class="note">Measured 2026-10-12 via <code>python evals/harness.py</code>. <a href="#evals">See the gates ↓</a></p>
     </div>
   </section>
 
-  <!-- 4. HOW -->
+  <!-- HOW TO USE -->
   <section id="how" aria-labelledby="how-h">
     <div class="wrap">
-      <h2 id="how-h">Normalize → Cite → Dry-run → Approve → Commit.</h2>
-      <ol class="how">
-        <li><strong>Normalize</strong> — glossary + typo map fix sallery, EMP42, INV2041, 03/04 dates.</li>
-        <li><strong>Cite</strong> — top-5 policy chunks; every policy claim gets [doc_id:chunk].</li>
-        <li><strong>Dry-run</strong> — payroll_lookup / vendor_recon / slip_parse run read-only. Diff shown.</li>
-        <li><strong>Approve</strong> — human verdict via UI, Slack, or WhatsApp. Expires in 15 min.</li>
-        <li><strong>Commit</strong> — vendor_commit writes once with an idempotency key. Audit + trace saved.</li>
-      </ol>
+      <h2 id="how-h">Up and running in an afternoon.</h2>
+      <div class="how-grid">
+        <div>
+          <ol class="how-steps">
+            <li><strong>Start it.</strong> Double-click <code>start.bat</code> — API on :8000, console on :8501, demo data seeded.
+              <pre><code>start.bat   # Windows one-shot launcher
+stop.bat    # shuts both down</code></pre></li>
+            <li><strong>Load your data.</strong> Console → Ingest → drop any <code>.csv .xlsx .json .pdf</code>.
+              AI maps your columns (or map them yourself), preview validates, bad rows are reported — never half-loaded.
+              <pre><code>curl -X POST localhost:8000/ingest/file \
+  -F validate_only=true -F file=@salaries.xlsx</code></pre></li>
+            <li><strong>Chat → Approve → Audit.</strong> Ask in Hinglish, get a cited dry-run, tap Approve in the
+              console, Slack, or WhatsApp. Every commit exports to CSV/JSON with trace, inputs, and cites.</li>
+          </ol>
+        </div>
+        <figure>
+          <img src="assets/team.jpg" alt="HR and payroll team reviewing salary queries together" loading="lazy" width="800" height="533">
+          <figcaption>Salary-day firefights, handled in one queue.</figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 
-  <!-- 5. EVAL GATES -->
+  <!-- PLATFORM -->
+  <section id="platform" aria-labelledby="feat-h">
+    <div class="wrap">
+      <h2 id="feat-h">One console. Eight tools. One gate: your approval.</h2>
+      <div class="cards">
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><h3>Voice-note intake</h3><p>WhatsApp audio + screenshot OCR → Hinglish text with confidence. Low-confidence spans flagged.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7M9 17h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><h3>Salary-slip parser</h3><p>PDF upload extracts gross, TDS, PF, net. Diffs over the configurable flag highlighted.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><h3>Attendance-to-ledger close</h3><p>Biometric CSV → LOP auto-calc + overtime estimate + draft journal with cite.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-8M21 19H3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><h3>TDS + PF estimator</h3><p>What-if CTC / old-vs-new simulator. Delta table with cites. Never commits.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z M9 9h6M9 13h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><h3>GST notice parser</h3><p>Paste a notice or upload PDF → demand, due date, linked invoices → HOLD or PAY + risk score.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-5.2A8 8 0 1 1 21 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><h3>Slack + WhatsApp approve</h3><p>Approve / reject with reason from chat. Signed buttons, per-run idempotency, 15-min expiry.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>Auditor export</h3><p>One-click CSV + JSON: trace_id, inputs, cites, approver identity.</p></article>
+        <article><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><h3>Guardrails</h3><p>PII redaction, 25s timeout + 3× retry, duplicate quarantine, Temporal-backed durable jobs.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKFLOW band -->
+  <section id="flow" aria-labelledby="flow-h">
+    <div class="wrap flow-grid">
+      <figure>
+        <img src="assets/office.jpg" alt="Payroll operations desk with reports and calculator" loading="lazy" width="800" height="533">
+      </figure>
+      <div>
+        <h2 id="flow-h">Normalize → Cite → Dry-run → Approve → Commit.</h2>
+        <ol class="how">
+          <li><strong>Normalize</strong> — glossary + typo map fix sallery, EMP42, INV2041, 03/04 dates.</li>
+          <li><strong>Cite</strong> — top-5 policy chunks; every claim gets [doc_id:chunk].</li>
+          <li><strong>Dry-run</strong> — tools run read-only. Diff shown, nothing moves.</li>
+          <li><strong>Approve</strong> — human verdict via console, Slack, or WhatsApp. 15-min expiry.</li>
+          <li><strong>Commit</strong> — writes once with an idempotency key. Audit + trace saved.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section id="security" aria-labelledby="sec-h">
+    <div class="wrap flow-grid">
+      <div>
+        <h2 id="sec-h">Controls your auditors will ask about.</h2>
+        <ul class="ticks">
+          <li><strong>Zero unapproved commits</strong> — enforced in Python, not in prompts. No prompt can override it.</li>
+          <li><strong>PII redaction</strong> — PAN, Aadhaar, bank and account numbers scrubbed before any log or trace; ingest can mask them at load.</li>
+          <li><strong>Signed approvals</strong> — HMAC links expire in 15 minutes; every commit carries an idempotency key.</li>
+          <li><strong>Durable jobs</strong> — Temporal workflows with retries, heartbeats, cancel, and content-addressed dedupe.</li>
+          <li><strong>Full replay</strong> — any run_id replays from checkpoint; every approval exports to audit CSV.</li>
+        </ul>
+      </div>
+      <figure>
+        <img src="assets/meeting.jpg" alt="Finance review meeting around audit documents" loading="lazy" width="800" height="533">
+      </figure>
+    </div>
+  </section>
+
+  <!-- PROOF -->
   <section id="evals" aria-labelledby="eval-h">
     <div class="wrap">
       <h2 id="eval-h">We ship only if all four gates pass.</h2>
       <div class="table-wrap">
       <table>
-        <thead><tr><th scope="col">Gate</th><th scope="col">Threshold</th><th scope="col">What it means</th></tr></thead>
+        <thead><tr><th scope="col">Gate</th><th scope="col">Threshold</th><th scope="col">Measured</th></tr></thead>
         <tbody>
-          <tr><td>Entity-WER (tail)</td><td>≤ 7%</td><td>emp_id, date, amount, invoice slots on Hinglish + typo cases</td></tr>
-          <tr><td>Worst-slice TCR</td><td>≥ 65%</td><td>min slice: hinglish_typos / code-mixed GST / ambiguous dates</td></tr>
-          <tr><td>Unapproved commits</td><td>0</td><td>any commit without human_verdict = approve blocks release</td></tr>
-          <tr><td>P95 approve→commit</td><td>&lt; 8s</td><td>avg tokens ≤ 3500; Hindi 3× fertility budgeted</td></tr>
+          <tr><td>Entity-WER (tail)</td><td>≤ 7%</td><td><strong>0.000</strong></td></tr>
+          <tr><td>Worst-slice TCR</td><td>≥ 65%</td><td><strong>1.000</strong></td></tr>
+          <tr><td>Unapproved commits</td><td>0</td><td><strong>0</strong></td></tr>
+          <tr><td>P95 / avg tokens</td><td>≤ 8s / 3500</td><td><strong>3.03s / 175</strong></td></tr>
         </tbody>
       </table>
       </div>
-      <p class="note">Tail cases run 5× with Wilson intervals. Point pass rates not accepted.
-        Thresholds never lowered to pass. Reproduce: <code>python evals/harness.py --project AccuPaid-startup</code>.</p>
+      <p class="note">120 cases (60 clean, 48 Hinglish tail, 12 adversarial). Tail runs 5× with Wilson intervals.
+        Reproduce: <code>python evals/harness.py --project AccuPaid-startup</code>. Thresholds never lowered to pass.</p>
     </div>
   </section>
 
-  <!-- 6. PRICING -->
+  <!-- PRICING -->
   <section id="pricing" aria-labelledby="price-h">
     <div class="wrap">
       <h2 id="price-h">Pilot free. Then pay per seat + per recon.</h2>
@@ -133,10 +192,13 @@
         <article><h3>Paid</h3><p class="price">INR 199 <span>/ HR seat / mo</span></p><p>+ INR 15 / vendor recon over 200 / mo. Annual prepay: 2 months free. CA-partner tier on request.</p></article>
       </div>
       <p class="cta-row"><a class="btn" href="#contact">Start pilot</a></p>
+      <figure class="banner">
+        <img src="assets/tax.jpg" alt="Tax calculations with calculator and forms" loading="lazy" width="1600" height="600">
+      </figure>
     </div>
   </section>
 
-  <!-- 7. CONTACT -->
+  <!-- CONTACT -->
   <section id="contact" aria-labelledby="contact-h">
     <div class="wrap narrow">
       <h2 id="contact-h">Get your pilot.</h2>
@@ -191,8 +253,8 @@
 <footer>
   <div class="wrap foot-in">
     <p>AccuPaid · Hinglish payroll disputes + GST recon with gated execution.</p>
-    <nav aria-label="Footer"><a href="#demo">Demo</a> · <a href="#evals">Evals</a> · <a href="#pricing">Pricing</a> · <a href="#contact">Contact</a></nav>
-    <p class="micro">© 2026 AccuPaid · Pilot build. No market claims without source + year.</p>
+    <nav aria-label="Footer"><a href="#platform">Platform</a> · <a href="#evals">Proof</a> · <a href="#pricing">Pricing</a> · <a href="#contact">Contact</a></nav>
+    <p class="micro">© 2026 AccuPaid · Pilot build. Photos: Unsplash (free license). No market claims without source + year.</p>
   </div>
 </footer>
 

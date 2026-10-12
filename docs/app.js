@@ -30,7 +30,7 @@
         }
       });
     }, { threshold: 0.12 });
-    document.querySelectorAll("#features article, #how li, #pricing article").forEach(function (el) {
+    document.querySelectorAll("#platform article, #how li, #flow li, #pricing article, .stat").forEach(function (el) {
       el.classList.add("reveal");
       io.observe(el);
     });
