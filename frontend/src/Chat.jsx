@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 
+/* Pipeline stages */
 const STAGES = ['normalize', 'route', 'docs', 'execute', 'verify', 'risk', 'decision'];
+
+/* Full‑length example queries — never truncated */
 const CHIPS = [
   'mera march ki salary kam ayi, TDS jyada kata? EMP_042',
   'Show payroll for EMP_007 for 2026-01.',
@@ -10,11 +13,14 @@ const CHIPS = [
   'Simulate TDS for CTC 1200000 under old vs new regime.',
 ];
 
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+/* Demo query that runs on first load */
 const DEMO_QUERY = 'mera march ki salary kam ayi, TDS jyada kata? EMP_042';
+
 const REASONS = ['verified with payroll sheet', 'checked with vendor', 'CA confirmed', 'typo, ignore'];
 
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').tracks;
+
+/* ── useTypewriter ── */
 function useTypewriter(text, active) {
   const [out, setOut] = useState(active ? '' : text);
   useEffect(() => {
@@ -31,6 +37,7 @@ function useTypewriter(text, active) {
   return out;
 }
 
+/* ── Pipeline ── */
 function Pipeline({ live, snapTo }) {
   const [n, setN] = useState(0);
   useEffect(() => {
@@ -50,16 +57,20 @@ function Pipeline({ live, snapTo }) {
   );
 }
 
+/* ── Confetti ── */
 function Confetti() {
   if (reduced()) return null;
   const bits = Array.from({ length: 26 }, (_, i) => i);
   return (
     <div className="confetti" aria-hidden="true">
-      {bits.map((i) => <span key={i} style={{ '--d': `${(i * 37) % 360}deg`, '--x': `${(i * 53) % 220 - 110}px` }} />)}
+      {bits.map((i) => (
+        <span key={i} style={{ '--d': `${(i * 37) % 360}deg`, '--x': `${(i * 53) % 220 - 110}px` }} />
+      ))}
     </div>
   );
 }
 
+/* ── ResultCard ── */
 function ResultCard({ result, animate }) {
   const summary = useTypewriter(result.summary || result.message || result.reason || '', animate);
   return (
@@ -91,6 +102,7 @@ function ResultCard({ result, animate }) {
   );
 }
 
+/* ── Approval ── */
 function Approval({ pending, onDone, coach }) {
   const [reason, setReason] = useState('');
   const [left, setLeft] = useState(pending.ttl_seconds || 900);
@@ -115,14 +127,22 @@ function Approval({ pending, onDone, coach }) {
         <span className="badge needs_approval">needs approval</span>
         <span className="muted" title="Signature expiry">expires in {mm}</span>
       </div>
-      {coach && <p className="coach-hint" role="status">This is the gate — nothing commits until you press Approve. Try it.</p>}
-      <div className="ttl" aria-hidden="true"><span style={{ width: `${(left / total) * 100}%` }} /></div>
+      {coach && (
+        <p className="coach-hint" role="status">
+          This is the gate — nothing commits until you press Approve. Try it.
+        </p>
+      )}
+      <div className="ttl" aria-hidden="true">
+        <span style={{ width: `${(left / total) * 100}%` }} />
+      </div>
       <ul>{pending.reasons.map((r) => <li key={r}><code>{r}</code></li>)}</ul>
       <label htmlFor="ap-reason">Reason (optional annotation)</label>
       <input id="ap-reason" value={reason} onChange={(e) => setReason(e.target.value)}
         placeholder="e.g. verified with payroll sheet" />
       <div className="chips">
-        {REASONS.map((r) => <button key={r} className="chip" onClick={() => setReason(r)}>{r}</button>)}
+        {REASONS.map((r) => (
+          <button key={r} className="chip" onClick={() => setReason(r)}>{r}</button>
+        ))}
       </div>
       {err && <p className="err" role="alert">{err}</p>}
       <div className="row">
@@ -136,6 +156,7 @@ function Approval({ pending, onDone, coach }) {
   );
 }
 
+/* ── Chat default ── */
 export default function Chat({ remember }) {
   const [msgs, setMsgs] = useState([]);
   const [input, setInput] = useState('');
@@ -145,8 +166,13 @@ export default function Chat({ remember }) {
   const bottom = useRef(null);
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth' }); }, [msgs]);
 
-  const runDemo = () => { setDemoArmed(true); send(DEMO_QUERY); };
+  /* ── runDemo ── */
+  const runDemo = () => {
+    setDemoArmed(true);
+    send(DEMO_QUERY);
+  };
 
+  /* ── send ── */
   const send = async (text) => {
     const q = (text ?? input).trim();
     if (!q || busy) return;
@@ -157,64 +183,95 @@ export default function Chat({ remember }) {
     setMsgs((m) => [...m, { id: workId, who: 'bot', working: true }]);
     try {
       const res = await api.chat(q);
-      setMsgs((m) => m.map((x) => x.id !== workId ? x : { ...x, working: false, data: res }));
+      setMsgs((m) =>
+        m.map((x) => (x.id !== workId ? x : { ...x, working: false, data: res }))
+      );
       remember(res.run_id, res.status);
       if (res.status === 'committed') setCelebrate((c) => c + 1);
     } catch (e) {
-      setMsgs((m) => m.map((x) => x.id !== workId ? x : { ...x, working: false, error: e.detail || 'request failed' }));
+      setMsgs((m) =>
+        m.map((x) => (x.id !== workId ? x : { ...x, working: false, error: e.detail || 'request failed' }))
+      );
     } finally { setBusy(false); }
   };
 
+  /* ── resolveApproval ── */
   const resolveApproval = (workId, res) => {
-    setMsgs((m) => m.map((x) => x.id !== workId ? x : { ...x, data: res }));
+    setMsgs((m) =>
+      m.map((x) => (x.id !== workId ? x : { ...x, data: res }))
+    );
     remember(res.run_id, res.status);
     if (res.status === 'committed') setCelebrate((c) => c + 1);
   };
 
   return (
     <section aria-label="Chat">
+      {/* Confetti on celebrations */}
       {celebrate > 0 && <Confetti key={celebrate} />}
+
       <div className="thread" aria-live="polite">
+        {/* ── Empty state — hero on first paint ── */}
         {msgs.length === 0 && (
           <div className="empty">
             <svg className="empty-art" viewBox="0 0 120 90" aria-hidden="true">
-              <rect x="8" y="10" width="104" height="70" rx="10" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M20 32h80M20 44h56M20 56h68" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity=".55"/>
-              <circle cx="92" cy="62" r="12" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M87 62l3.5 3.5L97 59" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <rect x="8" y="10" width="104" height="70" rx="10" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M20 32h80 M20 44h56 M20 56h68" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity=".55" />
+              <circle cx="92" cy="62" r="12" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M87 62l3.5 3.5L97 59" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             <h2>Salary dispute aaya?</h2>
-            <p className="muted">Watch a typo-filled Hinglish query turn into a cited dry-run — then you approve it. Live, in 60 seconds.</p>
-            <button className="btn go big" onClick={runDemo} disabled={busy}>▶ Run the 60-second demo</button>
+            <p className="muted">
+              Watch a typo‑filled Hinglish query turn into a cited dry‑run — then you approve it. Live, in ~60 seconds.
+            </p>
             <div className="statline" aria-label="Measured results">
               <span><strong>120/120</strong> evals</span>
               <span><strong>0</strong> unapproved</span>
               <span><strong>3.0s</strong> P95</span>
             </div>
+            <button className="btn go big" onClick={runDemo} disabled={busy}>▶ Run the 60-second demo</button>
           </div>
         )}
+
+        {/* ── Message bubbles ── */}
         {msgs.map((m) => m.who === 'you' ? (
           <p key={m.id} className="bubble you">{m.text}</p>
         ) : (
           <div key={m.id} className="bubble bot">
-            {m.working && (<><Pipeline live /> <p className="muted">working the pipeline…</p></>)}
+            {m.working && (<> <Pipeline live /> <p className="muted">working the pipeline…</p> </>)}
             {m.error && <p className="err" role="alert">{m.error}</p>}
             {m.data && m.data.status === 'needs_approval' && !m.data.result && (
-              <Approval pending={m.data} coach={demoArmed} onDone={(res) => { setDemoArmed(false); resolveApproval(m.id, res); }} />
+              <Approval
+                pending={m.data}
+                coach={demoArmed}
+                onDone={(res) => { setDemoArmed(false); resolveApproval(m.id, res); }}
+              />
             )}
-            {m.data && m.data.result && (<><Pipeline snapTo={99} /><ResultCard result={m.data.result} animate /></>)}
+            {m.data && m.data.result && (
+              <><Pipeline snapTo={99} /><ResultCard result={m.data.result} animate /></>
+            )}
             {m.data && m.data.status === 'answered' && !m.data.result && <p className="muted">done.</p>}
           </div>
         ))}
+
         <div ref={bottom} />
       </div>
+
+      {/* ── Example chips — full text, no truncation ── */}
       <div className="chips" role="group" aria-label="Example queries">
-        {CHIPS.map((c) => <button key={c} className="chip" disabled={busy} onClick={() => send(c)}>{c}</button>)}
+        {CHIPS.map((c) => (
+          <button key={c} className="chip" disabled={busy} onClick={() => send(c)}>{c}</button>
+        ))}
       </div>
+
       <form className="composer" onSubmit={(e) => { e.preventDefault(); send(); }}>
         <label className="sr" htmlFor="chat-in">Ask AccuPaid</label>
-        <input id="chat-in" value={input} onChange={(e) => setInput(e.target.value)}
-          placeholder="e.g. mera march ki salary kam ayi? EMP_042" autoComplete="off" />
+        <input
+          id="chat-in"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="e.g. mera march ki salary kam ayi? EMP_042"
+          autoComplete="off"
+        />
         <button className="btn go" type="submit" disabled={busy || !input.trim()}>
           {busy ? '…' : 'Send'}
         </button>

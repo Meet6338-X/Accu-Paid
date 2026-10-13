@@ -60,30 +60,30 @@ export default function App() {
         </div>
       </header>
 
-      <div className="layout">
+      <main className="layout">
         {history.length > 0 && (
-        <aside className="history" aria-label="Recent runs">
-          <h2>Recent runs</h2>
-          <ul>
-            {history.map((h) => (
-              <li key={h.runId}>
-                <button onClick={() => openRun(h.runId)} title={h.runId}>
-                  <code>{h.runId}</code>
-                  <span className="muted">{h.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
+          <aside className="aside" aria-label="Recent runs">
+            <h2>Recent runs</h2>
+            <ul>
+              {history.map((h) => (
+                <li key={h.runId}>
+                  <button onClick={() => openRun(h.runId)} title={h.runId}>
+                    <code>{h.runId}</code>
+                    <span className="muted">{h.label || ''}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </aside>
         )}
 
-        <main className="view">
+        <section className="view" aria-label="Main content">
           {tab === 'chat' && <Chat remember={remember} />}
           {tab === 'runs' && <Runs jumpRun={jumpRun} />}
           {tab === 'ingest' && <Ingest />}
           {tab === 'health' && <Health health={health} />}
-        </main>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }
